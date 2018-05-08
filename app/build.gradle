@@ -1,0 +1,144 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.mob.sdk'
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
+    defaultConfig {
+        applicationId "cn.njmeter.intelligenthydrant"
+        minSdkVersion 16
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        flavorDimensions "versionCode"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "armeabi", "arm64-v8a", "x86"
+        }
+    }
+    signingConfigs {
+        debug {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+
+    lintOptions {
+        disable "ResourceType"
+    }
+    buildTypes {
+        debug {
+            // 是否支持调试
+            debuggable true
+            // 是否支持jni调试
+            jniDebuggable true
+            // 代码压缩
+//            minifyEnabled true
+            // 是否支持Zipalign优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+//            shrinkResources true
+            // 是否支持本地化整理
+            pseudoLocalesEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //打签名包时，需要添加此设置
+            signingConfig signingConfigs.debug
+        }
+        release {
+            // 是否支持调试
+            debuggable false
+            // 是否支持jni调试
+            jniDebuggable false
+            // 代码压缩
+            minifyEnabled true
+            // 是否支持Zipalign优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources true
+            // 是否支持本地化整理
+            pseudoLocalesEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            //打签名包时，需要添加此设置
+            signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+            java.srcDirs = ['src/main/java']
+        }
+    }
+
+    repositories {
+        flatDir {
+            dirs 'libs'     //aar的目录地址
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "IntelligentHydrant_${variant.versionName}.apk"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+// 在MobSDK的扩展中注册SMSSDK的相关信息
+MobSDK {
+    appKey keystoreProperties['AppKey_MobSDK']
+    appSecret keystoreProperties['AppSecret_MobSDK']
+    SMSSDK {}
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:percent:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'org.jetbrains:annotations:15.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    //dex突破65535的限制
+    implementation 'com.android.support:multidex:1.0.3'
+    //百度地图
+    implementation files('libs/BaiduLBS_Android.jar')
+    implementation 'com.squareup.okhttp3:okhttp:3.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.1.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.5.0'
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'io.reactivex:rxjava:1.2.1'
+    implementation files('libs/jcore-android-1.2.0.jar')
+    implementation files('libs/jpush-android-3.1.2.jar')
+    implementation files('libs/sunjce_provider.jar')
+    implementation 'com.pkmmte.view:circularimageview:1.1'
+    implementation 'com.github.bumptech.glide:glide:3.7.0'
+    // 图像剪切
+    implementation('com.kevin:crop:1.0.2') {
+        // 如果已经引入 support:appcompat-v7 可以加上这句话
+        exclude group: 'com.android.support', module: 'appcompat-v7'
+    }
+    implementation 'com.google.zxing:core:3.3.0'
+    implementation 'com.jungly:gridPasswordView:0.3'
+}

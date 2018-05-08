@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/input_qrcode_background"
+    android:orientation="vertical">
+
+    <cn.njmeter.intelligenthydrant.widget.MyToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        app:titleText="@string/app_name" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp">
+
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/input_qrcode_bike_img" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/input_qrcode_arrow_img" />
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/input_qrcode_zoom_img" />
+
+        <ImageView
+            android:id="@+id/id_iv_flash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:clickable="true"
+            android:padding="15dp"
+            android:src="@drawable/scan_qrcode_flash_light_off" />
+    </LinearLayout>
+
+    <com.jungly.gridpasswordview.GridPasswordView
+        android:id="@+id/pswView"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        app:gpvGridColor="#47494C"
+        app:gpvLineColor="#6C6D70"
+        app:gpvLineWidth="1dp"
+        app:gpvPasswordLength="8"
+        app:gpvPasswordType="textVisiblePassword"
+        app:gpvTextColor="@color/white"
+        app:gpvTextSize="25sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="25dp"
+        android:gravity="center"
+        android:text="请输入正确的智能消火栓编号"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/id_bt_query"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="25dp"
+        android:background="@color/smssdk_gray"
+        android:clickable="false"
+        android:padding="10dp"
+        android:text="确认"
+        android:textColor="@color/white" />
+
+</LinearLayout>
