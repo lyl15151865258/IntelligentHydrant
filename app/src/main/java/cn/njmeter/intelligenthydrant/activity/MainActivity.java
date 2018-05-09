@@ -121,7 +121,6 @@ public class MainActivity extends BaseActivity {
     private PlanNode startNodeStr, endNodeStr;
     private LatLng mCurrentLocation;
     private boolean isFirstLocation = true;
-    private boolean isNeedCurrentlocation = false;
 
     private BDLocation mBDLocation;
     private static final int HYDRANTTYPE_ALL_HYDRANT = 0;
@@ -130,7 +129,7 @@ public class MainActivity extends BaseActivity {
     private int CURRENT_HYDRANTTYPE = HYDRANTTYPE_ALL_HYDRANT;
     private ClusterManager<MyItem> mClusterManager;
     private MyItem mCurrentItem;
-    private boolean shoudUseLocation = true;
+    private boolean shouldUseLocation = true;
 
     private BitmapDescriptor dotExpand = BitmapDescriptorFactory.fromResource(R.mipmap.icon_gcoding);
 
@@ -268,11 +267,11 @@ public class MainActivity extends BaseActivity {
                 setMyClickable(tvOtherHydrant);
                 break;
             case R.id.dingwei:
-                shoudUseLocation = true;
+                shouldUseLocation = true;
                 Go2myLotionAndRefresh();
                 break;
             case R.id.refreshAll:
-                shoudUseLocation = false;
+                shouldUseLocation = false;
                 refreshData();
                 break;
             case R.id.kefu:
@@ -403,7 +402,7 @@ public class MainActivity extends BaseActivity {
                     .direction(mCurrentX)
                     .latitude(bdLocation.getLatitude())
                     .longitude(bdLocation.getLongitude()).build();
-            if (isNeedCurrentlocation) {
+            if (shouldUseLocation) {
                 mBaiduMap.setMyLocationData(locData);
             }
             currentLatitude = bdLocation.getLatitude();
@@ -412,13 +411,9 @@ public class MainActivity extends BaseActivity {
             MyLocationManager.getInstance().setCurrentLL(mCurrentLocation);
             MyLocationManager.getInstance().setAddress(bdLocation.getAddrStr());
             startNodeStr = PlanNode.withLocation(mCurrentLocation);
-            //option.setScanSpan(5000)，每隔5000ms这个方法就会调用一次，而有些我们只想调用一次，所以要判断一下isFirstLoc
             if (isFirstLocation) {
                 isFirstLocation = false;
-                LatLng ll = new LatLng(bdLocation.getLatitude(),
-                        bdLocation.getLongitude());
-                mapStatus = new MapStatus.Builder().target(ll).zoom(18.0f).build();
-                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(mapStatus));
+                moveToPoint(mCurrentLocation);
                 changeLatitude = bdLocation.getLatitude();
                 changeLongitude = bdLocation.getLongitude();
                 if (!isServiceLive) {
@@ -429,15 +424,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void Go2myLotionAndRefresh() {
-        getMyLocation();
+        moveToPoint(mCurrentLocation);
         refreshData();
-    }
-
-    public void getMyLocation() {
-        isNeedCurrentlocation = true;
-        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
-        MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
-        mBaiduMap.setMapStatus(msu);
     }
 
     private void refreshData() {
@@ -533,11 +521,13 @@ public class MainActivity extends BaseActivity {
     private void addMarkers(List<MyItem> myItemList) {
         LogUtils.d("List的长度是：" + myItemList.size());
         mClusterManager.clearItems();
+        LatLng centerPoint;
         if (myItemList.size() == 0) {
             showToast("没有查询到消火栓");
+            centerPoint = mCurrentLocation;
         } else if (myItemList.size() == 1) {
-            moveToPoint(myItemList.get(0).getPosition());
             mClusterManager.addItems(myItemList);
+            centerPoint = myItemList.get(0).getPosition();
         } else {
             double longitude = 0;
             double latitude = 0;
@@ -545,11 +535,11 @@ public class MainActivity extends BaseActivity {
                 longitude += myItem.getPosition().longitude;
                 latitude += myItem.getPosition().latitude;
             }
-            LatLng centerPoint = new LatLng(latitude / myItemList.size(), longitude / myItemList.size());
-            if (shoudUseLocation) {
-                moveToPoint(centerPoint);
-            }
             mClusterManager.addItems(myItemList);
+            centerPoint = new LatLng(latitude / myItemList.size(), longitude / myItemList.size());
+        }
+        if (shouldUseLocation) {
+            moveToPoint(centerPoint);
         }
     }
 

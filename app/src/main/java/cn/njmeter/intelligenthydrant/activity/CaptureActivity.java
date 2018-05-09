@@ -26,7 +26,6 @@ import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
 import android.webkit.URLUtil;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -56,7 +55,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
 
     private static final int REQUEST_PERMISSION_CAMERA = 1000;
     private static final int REQUEST_PERMISSION_PHOTO = 1001;
-    private static final int REQEST_CARNUB = 22;//yiwen add
+    private static final int REQEST_CARNUB = 22;
 
     private CaptureActivity mActivity;
 
@@ -71,8 +70,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
     private static final float BEEP_VOLUME = 0.10f;
     private boolean vibrate;
     private boolean flashLightOpen = false;
-    private ImageView flashIbtn,bt_input;
-    private boolean isOnlyNub = false;
+    private ImageView flashIbtn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -141,43 +139,50 @@ public class CaptureActivity extends BaseActivity implements Callback {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && data != null && requestCode == ActionUtils.PHOTO_REQUEST_GALLERY) {
-            Uri inputUri = data.getData();
-            String path = null;
+        switch (requestCode) {
+            case ActionUtils.PHOTO_REQUEST_GALLERY:
+                if (resultCode == RESULT_OK && data != null) {
+                    Uri inputUri = data.getData();
+                    String path = null;
 
-            if (URLUtil.isFileUrl(inputUri.toString())) {
-                // 小米手机直接返回的文件路径
-                path = inputUri.getPath();
-            } else {
-                String[] proj = {MediaStore.Images.Media.DATA};
-                Cursor cursor = getContentResolver().query(inputUri, proj, null, null, null);
-                if (cursor != null && cursor.moveToFirst()) {
-                    path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
+                    if (URLUtil.isFileUrl(inputUri.toString())) {
+                        // 小米手机直接返回的文件路径
+                        path = inputUri.getPath();
+                    } else {
+                        String[] proj = {MediaStore.Images.Media.DATA};
+                        Cursor cursor = getContentResolver().query(inputUri, proj, null, null, null);
+                        if (cursor != null && cursor.moveToFirst()) {
+                            path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
+                        }
+                    }
+                    if (!TextUtils.isEmpty(path)) {
+                        Result result = QrUtils.decodeImage(path);
+                        if (result != null) {
+                            handleDecode(result, null);
+                        } else {
+                            new AlertDialog.Builder(CaptureActivity.this)
+                                    .setTitle("提示")
+                                    .setMessage("此图片无法识别")
+                                    .setPositiveButton("确定", null)
+                                    .show();
+                        }
+                    } else {
+                        Toast.makeText(mActivity, "图片路径未找到", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-            if (!TextUtils.isEmpty(path)) {
-                Result result = QrUtils.decodeImage(path);
-                if (result != null) {
-                    handleDecode(result, null);
-                } else {
-                    new AlertDialog.Builder(CaptureActivity.this)
-                            .setTitle("提示")
-                            .setMessage("此图片无法识别")
-                            .setPositiveButton("确定", null)
-                            .show();
+                break;
+            case REQEST_CARNUB:
+                if (RESULT_OK == resultCode) {
+                    Intent intent = new Intent();
+                    intent.putExtra("result", data.getStringExtra("result"));
+                    setResult(RESULT_OK, intent);
+                    ActivityController.finishActivity(this);
                 }
-            } else {
-                Toast.makeText(mActivity, "图片路径未找到", Toast.LENGTH_SHORT).show();
-            }
-        } else {//yiwen add
-            if (requestCode == REQEST_CARNUB && RESULT_OK == resultCode) {
-                Intent intent = new Intent();
-                intent.putExtra("result", data.getStringExtra("result"));
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-
+                break;
+            default:
+                break;
         }
+
     }
 
     @Override
@@ -192,7 +197,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
                         .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mActivity.finish();
+                                ActivityController.finishActivity(mActivity);
                             }
                         })
                         .show();
@@ -233,14 +238,10 @@ public class CaptureActivity extends BaseActivity implements Callback {
             resultIntent.putExtras(bundle);
             this.setResult(RESULT_OK, resultIntent);
         }
-        mActivity.finish();
+        ActivityController.finishActivity(mActivity);
     }
 
     protected void initView() {
-        Intent intent = getIntent();
-        if (intent != null) {
-            isOnlyNub = intent.getBooleanExtra("isOnlyNub", false);
-        }
         setContentView(R.layout.qr_camera);
 
         MyToolbar toolbar = findViewById(R.id.toolbar);
@@ -248,7 +249,6 @@ public class CaptureActivity extends BaseActivity implements Callback {
 
         viewfinderView = findViewById(R.id.viewfinder_view);
         flashIbtn = findViewById(R.id.flash_ibtn);
-        bt_input = findViewById(R.id.bt_input);
 
         findViewById(R.id.ll_input).setOnClickListener(onClickListener);
         findViewById(R.id.ll_flashLight).setOnClickListener(onClickListener);
@@ -260,8 +260,8 @@ public class CaptureActivity extends BaseActivity implements Callback {
                 ActivityController.finishActivity(this);
                 break;
             case R.id.ll_input:
-                // openGallery();
-                startActivityForResult(QRCodeInputActivity.getMyIntent(CaptureActivity.this, isOnlyNub), REQEST_CARNUB);
+                Intent intent = new Intent(CaptureActivity.this, QRCodeInputActivity.class);
+                startActivityForResult(intent, REQEST_CARNUB);
                 break;
             case R.id.ll_flashLight:
                 if (flashLightOpen) {

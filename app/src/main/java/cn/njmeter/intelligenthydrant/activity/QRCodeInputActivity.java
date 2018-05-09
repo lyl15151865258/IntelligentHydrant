@@ -1,6 +1,5 @@
 package cn.njmeter.intelligenthydrant.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,9 +8,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.jungly.gridpasswordview.GridPasswordView;
+import com.jungly.gridpasswordview.PasswordType;
 
 import cn.njmeter.intelligenthydrant.R;
 import cn.njmeter.intelligenthydrant.qrcode.zxing.camera.CameraManager;
+import cn.njmeter.intelligenthydrant.utils.ActivityController;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.widget.MyToolbar;
 
@@ -21,19 +22,13 @@ public class QRCodeInputActivity extends BaseActivity {
     private ImageView mIvFlash;
     private Button mBtQuery;
     private GridPasswordView mPasswordView;
-    private String carNub;
     private boolean flashLightOpen = false;
-    private boolean isOnlyNub = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qrcode_input);
         CameraManager.init(getApplication());
-        Intent intent = getIntent();
-        if (intent != null) {
-            isOnlyNub = intent.getBooleanExtra("isOnlyNub", false);
-        }
         initView();
     }
 
@@ -53,6 +48,7 @@ public class QRCodeInputActivity extends BaseActivity {
         mBtQuery.setOnClickListener(onClickListener);
         mPasswordView = findViewById(R.id.pswView);
         mPasswordView.setPasswordVisibility(true);
+        mPasswordView.setPasswordType(PasswordType.NUMBER);
         mPasswordView.setOnPasswordChangedListener(new GridPasswordView.OnPasswordChangedListener() {
             @Override
             public void onTextChanged(String psw) {
@@ -62,7 +58,6 @@ public class QRCodeInputActivity extends BaseActivity {
 
             @Override
             public void onInputFinish(String psw) {
-                carNub = psw;
                 mBtQuery.setBackgroundResource(R.color.red);
                 mBtQuery.setClickable(true);
             }
@@ -100,33 +95,19 @@ public class QRCodeInputActivity extends BaseActivity {
         }
     };
 
-    public static Intent getMyIntent(Context context, boolean isOnlyNub) {
-        Intent intent = new Intent(context, QRCodeInputActivity.class);
-        intent.putExtra("isOnlyNub", isOnlyNub);
-        return intent;
-    }
-
     private void queryUnlock() {
-        if (TextUtils.isEmpty(mPasswordView.getPassWord().toString())) {
+        if (TextUtils.isEmpty(mPasswordView.getPassWord())) {
             showToast("请输入消火栓编号");
             return;
         }
-        if (mPasswordView.getPassWord().toString().length() != 8) {
-            showToast("请输入完整的智能消火栓号码");
+        if (mPasswordView.getPassWord().length() != 8) {
+            showToast("请输入完整的消火栓编号");
             return;
         }
-
-        if (isOnlyNub) {
-            Intent intent = new Intent();
-            intent.putExtra("result", mPasswordView.getPassWord().toString());
-            setResult(RESULT_OK, intent);
-            finish();
-        } else {
-            unlockSuccess = true;
-            startActivity(new Intent(QRCodeInputActivity.this, MainActivity.class));
-            finish();
-        }
-
+        Intent intent = new Intent();
+        intent.putExtra("result", mPasswordView.getPassWord());
+        setResult(RESULT_OK, intent);
+        ActivityController.finishActivity(QRCodeInputActivity.this);
     }
 
     private void flash() {
