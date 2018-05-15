@@ -28,6 +28,9 @@
     <string name="MainAccount">主账号设置</string>
     <string name="SubAccount">子账号设置</string>
     <string name="BindSocialAccount">绑定社交账号</string>
+    <string name="WaterUsingSearch">用水查询</string>
+    <string name="HistoricalRecord">历史用水记录</string>
+    <string name="WaterConsumption">查看用水统计</string>
     <string name="PersonalizedSettings">个性化设置</string>
     <string name="ShowLogoPage">显示引导页面</string>
     <string name="ClearCache">缓存清理</string>

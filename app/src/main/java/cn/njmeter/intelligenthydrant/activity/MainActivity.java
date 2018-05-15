@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -17,10 +18,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -102,6 +105,7 @@ public class MainActivity extends BaseActivity {
     private Context mContext;
     private String serverHost, httpPort, serviceName, hieId;
     private DrawerLayout drawerLayout;
+    private LinearLayout llMain;
     private TextView tvAllHydrant, tvFireHydrant, tvOtherHydrant;
     private ImageView mDingWei, mRefresh, mKefu;
     private RelativeLayout mRefreshAll;
@@ -185,7 +189,13 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initView() {
+        NavigationView navigation = findViewById(R.id.navigation);
+        ViewGroup.LayoutParams params = navigation.getLayoutParams();
+        params.width = mWidth * 4 / 5;
+        navigation.setLayoutParams(params);
+
         drawerLayout = findViewById(R.id.drawer_layout);
+        llMain = findViewById(R.id.ll_main);
         tvAllHydrant = findViewById(R.id.tv_allHydrant);
         tvFireHydrant = findViewById(R.id.tv_fireHydrant);
         tvOtherHydrant = findViewById(R.id.tv_otherHydrant);
@@ -217,6 +227,28 @@ public class MainActivity extends BaseActivity {
 
         btnExit = findViewById(R.id.btn_exit);
         btnExit.setOnClickListener(onClickListener);
+
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+                llMain.scrollTo(-(int) (navigation.getWidth() * slideOffset), 0);
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
     }
 
     /**
@@ -538,9 +570,7 @@ public class MainActivity extends BaseActivity {
             mClusterManager.addItems(myItemList);
             centerPoint = new LatLng(latitude / myItemList.size(), longitude / myItemList.size());
         }
-        if (shouldUseLocation) {
-            moveToPoint(centerPoint);
-        }
+        moveToPoint(centerPoint);
     }
 
     /**
@@ -604,7 +634,7 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public BitmapDescriptor getBitmapDescriptor() {
-            return BitmapDescriptorFactory.fromResource(R.mipmap.dot_dark_green);
+            return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_online);
         }
 
     }

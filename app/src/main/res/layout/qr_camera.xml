@@ -35,7 +35,7 @@
                 android:layout_marginBottom="@dimen/dp_10"
                 android:layout_marginTop="10dp"
                 android:contentDescription="@null"
-                android:src="@drawable/scan_qrcode_bike_img" />
+                android:src="@drawable/scan_qrcode_hydrant_img" />
 
             <cn.njmeter.intelligenthydrant.qrcode.zxing.view.ViewfinderView
                 android:id="@+id/viewfinder_view"
@@ -50,7 +50,6 @@
                 app:qr_showPossiblePoint="false"
                 app:qr_textErrorHintColor="@android:color/white"
                 app:qr_textHintColor="@android:color/darker_gray" />
-
 
             <LinearLayout
                 android:id="@+id/lo_scan"

@@ -103,6 +103,18 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/dp_10"
+                        android:text="@string/AccountSettings"
+                        android:textSize="@dimen/sp_18" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/ll_setMainAccount"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/dp_50"
@@ -126,16 +138,14 @@
                         android:layout_weight="1"
                         android:gravity="center_vertical"
                         android:padding="@dimen/dp_10"
-                        android:text="@string/AccountSettings"
+                        android:text="@string/MainAccount"
                         android:textSize="@dimen/sp_16" />
 
-                    <TextView
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:drawableEnd="@mipmap/ic_arrow_right"
-                        android:drawablePadding="@dimen/dp_8"
-                        android:drawableRight="@mipmap/ic_arrow_right"
-                        android:gravity="center_vertical|end" />
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_arrow_right" />
                 </LinearLayout>
 
                 <View
@@ -153,24 +163,28 @@
                     android:paddingLeft="@dimen/dp_16"
                     android:paddingRight="@dimen/dp_16">
 
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/icon_account" />
+
                     <TextView
                         android:layout_width="0px"
                         android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/dp_5"
+                        android:layout_marginStart="@dimen/dp_5"
                         android:layout_weight="1"
-                        android:drawableLeft="@mipmap/icon_account"
-                        android:drawablePadding="@dimen/dp_5"
-                        android:drawableStart="@mipmap/icon_account"
                         android:gravity="center_vertical"
+                        android:padding="@dimen/dp_10"
                         android:text="@string/SubAccount"
                         android:textSize="@dimen/sp_16" />
 
-                    <TextView
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:drawableEnd="@mipmap/ic_arrow_right"
-                        android:drawablePadding="@dimen/dp_8"
-                        android:drawableRight="@mipmap/ic_arrow_right"
-                        android:gravity="center_vertical|end" />
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_arrow_right" />
 
                 </LinearLayout>
 
@@ -189,24 +203,122 @@
                     android:paddingLeft="@dimen/dp_16"
                     android:paddingRight="@dimen/dp_16">
 
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/icon_bind_account" />
+
                     <TextView
                         android:layout_width="0px"
                         android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/dp_5"
+                        android:layout_marginStart="@dimen/dp_5"
                         android:layout_weight="1"
-                        android:drawableLeft="@mipmap/icon_bind_account"
-                        android:drawablePadding="@dimen/dp_5"
-                        android:drawableStart="@mipmap/icon_bind_account"
                         android:gravity="center_vertical"
+                        android:padding="@dimen/dp_10"
                         android:text="@string/BindSocialAccount"
                         android:textSize="@dimen/sp_16" />
 
-                    <TextView
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:drawableEnd="@mipmap/ic_arrow_right"
-                        android:drawablePadding="@dimen/dp_8"
-                        android:drawableRight="@mipmap/ic_arrow_right"
-                        android:gravity="center_vertical|end" />
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_arrow_right" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="@dimen/dp_10"
+                        android:text="@string/WaterUsingSearch"
+                        android:textSize="@dimen/sp_18" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_setMainAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_50"
+                    android:background="@drawable/background_item_list_selector"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/dp_16"
+                    android:paddingRight="@dimen/dp_16">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/icon_main_account" />
+
+                    <TextView
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/dp_5"
+                        android:layout_marginStart="@dimen/dp_5"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:padding="@dimen/dp_10"
+                        android:text="@string/HistoricalRecord"
+                        android:textSize="@dimen/sp_16" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_arrow_right" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_1"
+                    android:background="@color/gray_slight" />
+
+                <LinearLayout
+                    android:id="@+id/ll_setAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_50"
+                    android:background="@drawable/background_item_list_selector"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingLeft="@dimen/dp_16"
+                    android:paddingRight="@dimen/dp_16">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/icon_account" />
+
+                    <TextView
+                        android:layout_width="0px"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="@dimen/dp_5"
+                        android:layout_marginStart="@dimen/dp_5"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:padding="@dimen/dp_10"
+                        android:text="@string/WaterConsumption"
+                        android:textSize="@dimen/sp_16" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:src="@mipmap/ic_arrow_right" />
 
                 </LinearLayout>
 

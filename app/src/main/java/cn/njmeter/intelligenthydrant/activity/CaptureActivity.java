@@ -55,7 +55,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
 
     private static final int REQUEST_PERMISSION_CAMERA = 1000;
     private static final int REQUEST_PERMISSION_PHOTO = 1001;
-    private static final int REQEST_CARNUB = 22;
+    private static final int REQUEST_HYDRANT_NUMBER = 22;
 
     private CaptureActivity mActivity;
 
@@ -171,7 +171,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
                     }
                 }
                 break;
-            case REQEST_CARNUB:
+            case REQUEST_HYDRANT_NUMBER:
                 if (RESULT_OK == resultCode) {
                     Intent intent = new Intent();
                     intent.putExtra("result", data.getStringExtra("result"));
@@ -261,7 +261,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
                 break;
             case R.id.ll_input:
                 Intent intent = new Intent(CaptureActivity.this, QRCodeInputActivity.class);
-                startActivityForResult(intent, REQEST_CARNUB);
+                startActivityForResult(intent, REQUEST_HYDRANT_NUMBER);
                 break;
             case R.id.ll_flashLight:
                 if (flashLightOpen) {

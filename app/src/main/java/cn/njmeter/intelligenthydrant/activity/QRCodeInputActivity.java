@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.jungly.gridpasswordview.GridPasswordView;
 import com.jungly.gridpasswordview.PasswordType;
@@ -20,6 +21,7 @@ public class QRCodeInputActivity extends BaseActivity {
 
     public static boolean unlockSuccess = false;
     private ImageView mIvFlash;
+    private TextView tvWarning;
     private Button mBtQuery;
     private GridPasswordView mPasswordView;
     private boolean flashLightOpen = false;
@@ -42,7 +44,8 @@ public class QRCodeInputActivity extends BaseActivity {
 
         MyToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.initToolBar(this, toolbar, "输入消火栓编号", R.drawable.back_white, onClickListener);
-        mIvFlash = findViewById(R.id.id_iv_flash);
+        mIvFlash = findViewById(R.id.iv_flash);
+        tvWarning = findViewById(R.id.tv_warning);
         mBtQuery = findViewById(R.id.id_bt_query);
         mIvFlash.setOnClickListener(onClickListener);
         mBtQuery.setOnClickListener(onClickListener);
@@ -54,12 +57,16 @@ public class QRCodeInputActivity extends BaseActivity {
             public void onTextChanged(String psw) {
                 mBtQuery.setBackgroundResource(R.color.smssdk_gray);
                 mBtQuery.setClickable(false);
+                tvWarning.setText("请确认您输入了正确的智能消火栓编号");
+                tvWarning.setTextColor(getResources().getColor(R.color.white));
             }
 
             @Override
             public void onInputFinish(String psw) {
                 mBtQuery.setBackgroundResource(R.color.red);
                 mBtQuery.setClickable(true);
+                tvWarning.setText("若因输错编码造成的他人用水，将由您自行承担责任");
+                tvWarning.setTextColor(getResources().getColor(R.color.red_400));
             }
         });
     }
@@ -86,7 +93,7 @@ public class QRCodeInputActivity extends BaseActivity {
 
     private View.OnClickListener onClickListener = (view) -> {
         switch (view.getId()) {
-            case R.id.id_iv_flash:
+            case R.id.iv_flash:
                 flash();
                 break;
             case R.id.id_bt_query:
