@@ -111,13 +111,11 @@
                 android:clickable="true"
                 android:gravity="center"
                 android:tag="2"
-                android:text="市政园林"
+                android:text="市政取水点"
                 android:textColor="@color/white"
                 android:textSize="15dp" />
 
         </LinearLayout>
-
-        <include layout="@layout/bike_info_board" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -127,6 +125,33 @@
                 android:id="@+id/bmapview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            <include layout="@layout/hydrant_info_board" />
+
+            <RelativeLayout
+                android:id="@+id/popupPOIMarker"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/picture"
+                    android:layout_width="@dimen/dp_60"
+                    android:layout_height="@dimen/dp_60"
+                    android:layout_above="@+id/view_center"
+                    android:layout_centerHorizontal="true"
+                    android:contentDescription="@null"
+                    android:padding="@dimen/dp_3"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/icon_hydrant_online" />
+
+                <View
+                    android:id="@+id/view_center"
+                    android:layout_width="@dimen/dp_0"
+                    android:layout_height="@dimen/dp_0"
+                    android:layout_centerInParent="true" />
+            </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"

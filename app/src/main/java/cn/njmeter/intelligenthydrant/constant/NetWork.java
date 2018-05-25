@@ -24,8 +24,8 @@ public class NetWork {
      */
     public static final String PROJECT_MAIN = "AndroidManager";
 //    public static final String SERVER_HOST_MAIN = "58.240.47.50";
-//    public static final String SERVER_PORT_MAIN = "9005";
-//    public static final String PROJECT_MAIN = "al";
+//    public static final String SERVER_PORT_MAIN = "5068";
+//    public static final String PROJECT_MAIN = "android";
 
     //网络超时、socket心跳包发送间隔等
     /**
@@ -55,7 +55,7 @@ public class NetWork {
     /**
      * 心跳包发送间隔
      */
-    public static final int HEART_BEAT_RATE = 3 * 1000;
+    public static final int HEART_BEAT_RATE = 10 * 1000;
 
     /**
      * 消火栓默认出厂IP

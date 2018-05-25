@@ -5,10 +5,13 @@ import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import cn.njmeter.intelligenthydrant.BuildConfig;
 import cn.njmeter.intelligenthydrant.HydrantApplication;
+import cn.njmeter.intelligenthydrant.constant.ApkInfo;
 import cn.njmeter.intelligenthydrant.constant.NetWork;
 import cn.njmeter.intelligenthydrant.network.retrofit.ProgressListener;
 import cn.njmeter.intelligenthydrant.network.retrofit.ProgressResponseBody;
@@ -185,13 +188,15 @@ public class NetClient {
         Gson gson = new GsonBuilder().setLenient().create();
         // 初始化Retrofit
         Retrofit mRetrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(BASE_URL_PROJECT)
                 .client(client)
                 .addConverterFactory(new StringConverterFactory())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
-        Call<ResponseBody> downloadCall = mRetrofit.create(NjMeterApi.class).downloadFile(filePath);
+        Map<String, String> params = new HashMap<>(1);
+        params.put("apkTypeId", ApkInfo.APK_TYPE_ID_HYDRANT);
+        Call<ResponseBody> downloadCall = mRetrofit.create(NjMeterApi.class).downloadFile(params);
         downloadCall.enqueue(callback);
     }
 

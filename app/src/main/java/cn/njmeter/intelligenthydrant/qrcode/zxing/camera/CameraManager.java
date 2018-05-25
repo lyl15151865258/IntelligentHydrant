@@ -343,7 +343,7 @@ public final class CameraManager {
      */
     public boolean setFlashLight(boolean open) {
         if (camera == null) {
-            return false;
+            camera = Camera.open();
         }
         Camera.Parameters parameters = camera.getParameters();
         if (parameters == null) {

@@ -30,12 +30,16 @@
         <item name="android:windowAnimationStyle">@style/AnimationActivity</item>
     </style>
 
-    <style name="loading_dialog" parent="android:style/Theme.Dialog">
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowBackground">@color/trans</item>
-        <item name="android:windowIsFloating">true</item>
+    <style name="loading_dialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item><!--自己想要的背景-->
+        <item name="android:backgroundDimEnabled">true</item><!--启用昏暗背景-->
+        <item name="android:backgroundDimAmount">0.3</item><!--昏暗度-->
     </style>
 
     <style name="dialog" parent="@android:style/Theme.Dialog">
@@ -96,4 +100,9 @@
         <attr name="borderWidth" format="dimension" />
 
     </declare-styleable>
+
+    <style name="AnimBottom" parent="@android:style/Animation">
+        <item name="android:windowEnterAnimation">@anim/push_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
+    </style>
 </resources>

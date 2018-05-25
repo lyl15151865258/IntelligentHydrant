@@ -262,7 +262,7 @@ public class RetrievePasswordActivity extends BaseActivity {
                         unsubscribe();
                     }
                 } else {
-                    showLoadingDialog(mContext, "重置密码中，请稍后", true);
+                    showLoadingDialog(mContext, "重置中", true);
                 }
             }
 

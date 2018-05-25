@@ -8,6 +8,7 @@ import cn.njmeter.intelligenthydrant.bean.VersionLog;
 import cn.njmeter.intelligenthydrant.bean.WaterMeterLoginResult;
 import cn.njmeter.intelligenthydrant.loginregister.bean.ClientUser;
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.FieldMap;
@@ -48,7 +49,7 @@ public interface NjMeterApi {
      * @return 返回值
      */
     @FormUrlEncoded
-    @POST("AndroidController/loginAndroid.do")
+    @POST("AndroidController/newLoginAndroid.do")
     Observable<String> loginMainAccount(@FieldMap Map<String, String> params);
 
     /**
@@ -56,8 +57,9 @@ public interface NjMeterApi {
      *
      * @return 返回值
      */
-    @GET("AndroidController/getVersionUpdateLog.do")
-    Observable<VersionLog> getVersionLog();
+    @FormUrlEncoded
+    @POST("AndroidController/getNewVersionUpdateLog.do")
+    Observable<VersionLog> getVersionLog(@FieldMap Map<String, String> params);
 
     /**
      * 子账号更新信息的请求
@@ -99,6 +101,26 @@ public interface NjMeterApi {
     @POST("AndroidController/updatePassword.do")
     Observable<NormalResult> resetPassword(@FieldMap Map<String, String> params);
 
+    /**
+     * 更新单位信息
+     *
+     * @param params 参数
+     * @return 返回值
+     */
+    @FormUrlEncoded
+    @POST("AndroidController/modifyUserInfo.do")
+    Observable<NormalResult> updateCompany(@FieldMap Map<String, String> params);
+
+    /**
+     * 更新用户头像
+     *
+     * @param information 描述信息
+     * @param file        头像文件
+     * @return 更新结果
+     */
+    @Multipart
+    @POST("AndroidController/uploadHeadPortrait.do")
+    Observable<NormalResult> uploadUserIcon(@Part("information") RequestBody information, @Part MultipartBody.Part file);
 
     /**
      * 上传错误日志文件
@@ -113,11 +135,12 @@ public interface NjMeterApi {
     /**
      * 下载软件
      *
-     * @param filePath 文件路径
-     * @return 文件
+     * @param params 文件类型
+     * @return ResponseBody
      */
-    @GET
-    Call<ResponseBody> downloadFile(@Url String filePath);
+    @FormUrlEncoded
+    @POST("VersionController/downloadNewVersion.do")
+    Call<ResponseBody> downloadFile(@FieldMap Map<String, String> params);
 
 
     /******************************************************************  消火栓平台相关接口  ******************************************************************

@@ -58,6 +58,21 @@
     <string name="camera_pop_album">从相册选取</string>
     <string name="camera_pop_cancel">取消</string>
 
+    <string name="label_ok">确定</string>
+    <string name="permission_title_rationale">权限需求</string>
+    <string name="permission_read_storage_rationale">选择图片时需要读取权限</string>
+    <string name="permission_write_storage_rationale">拍照时需要存储权限</string>
+
+    <string name="Company">单位</string>
+    <string name="Position">职务</string>
+    <string name="SaveInformation">保存信息</string>
+
+    <string name="versionCode">当前版本号:</string>
+    <string name="example_versionCode">V1.0</string>
+    <string name="latest_data">最新数据</string>
+
+    <string name="EnterSearchContent">请输入搜索内容</string>
+
     <string name="ChangeNickname">修改昵称</string>
     <string name="TypeInNickname">请输入昵称</string>
     <string name="ConfirmModification">确认修改</string>
@@ -69,6 +84,15 @@
     <string name="CanNotGetTheVerificationCode">获取不到验证码？</string>
     <string name="resend_info_time">重新发送(%ds)</string>
     <string name="Confirm">确 认</string>
+
+    <string name="SmartWaterSupply">智慧水务平台</string>
+    <string name="InputServerHost">请输入域名或服务器IP地址</string>
+    <string name="InputHttpPort">请输入Http端口号</string>
+    <string name="InputSocketPort">请输入Socket端口号</string>
+    <string name="InputWebSocketPort">请输入WebSocket端口号</string>
+    <string name="InputServiceName">请输入服务名</string>
+    <string name="InputUsername">请输入用户名</string>
+    <string name="InputPassword2">请输入密码</string>
 
     <string name="update_version">版本升级（%1$s）</string>
     <string name="update_version2">%1$s（%2$s）</string>
@@ -83,6 +107,9 @@
     <string name="dialog_input_continue">继&#160;&#160;&#160;&#160;续</string>
 
     <string name="scan_failed">扫描失败</string>
+    <string name="loading">加载中…</string>
+    <string name="exampleConsumption">%1$sm³</string>
+    <string name="exampleFlowRate">%1$sm³/h</string>
 
     <string name="notification_open_notification">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;因为系统限制，您需要手动授予通知权限，不授予权限将影响软件的正常使用，是否前往设置页面打开？</string>
     <string name="reminder_metter">友情提示</string>

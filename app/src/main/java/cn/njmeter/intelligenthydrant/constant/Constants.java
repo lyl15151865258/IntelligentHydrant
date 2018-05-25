@@ -20,10 +20,18 @@ public class Constants {
     /**
      * EventBus标记
      */
-    public static final String CONNECT_SUCCESS = "connectSuccess";
-    public static final String CONNECT_FAIL = "connectFail";
-    public static final String SHOW_TOAST = "showToast";
-    public static final String SHOW_DATA = "showData";
+    public static final String CONNECT_SUCCESS_SOCKET = "connectSuccess_socket";
+    public static final String CONNECT_SUCCESS_WEBSOCKET = "connectSuccess_webSocket";
+    public static final String CONNECT_FAIL_SOCKET = "connectFail_socket";
+    public static final String CONNECT_FAIL_WEBSOCKET = "connectFail_webSocket";
+    public static final String CONNECT_OPEN_SOCKET = "connectOpen_socket";
+    public static final String CONNECT_OPEN_WEBSOCKET = "connectOpen_webSocket";
+    public static final String CONNECT_CLOSE_SOCKET = "connectClose_socket";
+    public static final String CONNECT_CLOSE_WEBSOCKET = "connectClose_webSocket";
+    public static final String SHOW_TOAST_SOCKET = "showToast_socket";
+    public static final String SHOW_TOAST_WEBSOCKET = "showToast_webSocket";
+    public static final String SHOW_DATA_SOCKET = "showData_socket";
+    public static final String SHOW_DATA_WEBSOCKET = "showData_webSocket";
 
     public static final int METER_ID_LENGTH = 8;
     public static final int HYDRANT_ID_LENGTH = 8;
@@ -31,6 +39,7 @@ public class Constants {
     public static final String DEFAULT_METER_ID = "FFFFFFFF";
 
     public static final int ACTIVITY_REQUEST_CODE_100 = 100;
+    public static final int ACTIVITY_REQUEST_CODE_200 = 200;
     public static final int ACTIVITY_RESULT_CODE_100 = 100;
     public static final int ACTIVITY_RESULT_CODE_200 = 200;
 

@@ -10,10 +10,10 @@ android {
     buildToolsVersion "27.0.3"
     defaultConfig {
         applicationId "cn.njmeter.intelligenthydrant"
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 20180525
+        versionName "1.0.1"
         flavorDimensions "versionCode"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -121,7 +121,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     //百度地图
     implementation files('libs/BaiduLBS_Android.jar')
-    implementation 'com.squareup.okhttp3:okhttp:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
@@ -141,4 +141,5 @@ dependencies {
     }
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.jungly:gridPasswordView:0.3'
+    implementation 'org.greenrobot:eventbus:3.1.1'
 }

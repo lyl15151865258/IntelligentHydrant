@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.jungly.gridpasswordview.GridPasswordView;
 import com.jungly.gridpasswordview.PasswordType;
 
+import java.io.IOException;
+
 import cn.njmeter.intelligenthydrant.R;
 import cn.njmeter.intelligenthydrant.qrcode.zxing.camera.CameraManager;
 import cn.njmeter.intelligenthydrant.utils.ActivityController;
@@ -31,6 +33,13 @@ public class QRCodeInputActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qrcode_input);
         CameraManager.init(getApplication());
+        try {
+            CameraManager.get().openDriver(null);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
         initView();
     }
 
@@ -73,7 +82,7 @@ public class QRCodeInputActivity extends BaseActivity {
 
 
     /**
-     * 切换散光灯状态
+     * 切换闪光灯状态
      */
     public void toggleFlashLight() {
         if (flashLightOpen) {
@@ -84,8 +93,7 @@ public class QRCodeInputActivity extends BaseActivity {
     }
 
     private void setFlashLightOpen(boolean open) {
-        if (flashLightOpen == open)
-            return;
+        if (flashLightOpen == open) return;
 
         flashLightOpen = !flashLightOpen;
         CameraManager.get().setFlashLight(open);

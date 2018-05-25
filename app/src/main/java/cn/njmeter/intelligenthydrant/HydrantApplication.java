@@ -8,6 +8,9 @@ import android.text.TextUtils;
 
 import com.baidu.mapapi.SDKInitializer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.njmeter.intelligenthydrant.loginregister.bean.ClientUser;
 import cn.njmeter.intelligenthydrant.utils.CrashHandler;
 import cn.njmeter.intelligenthydrant.utils.GsonUtils;
@@ -30,6 +33,7 @@ public class HydrantApplication extends MultiDexApplication {
     private ClientUser.Account account;
     private ClientUser.Version version;
     private ClientUser.Version2 version2;
+    public List<ClientUser.Server> serverList;
     public static boolean loginSuccess;
 
     @Override
@@ -45,6 +49,7 @@ public class HydrantApplication extends MultiDexApplication {
         SharedPreferencesUtils.init(this);
         //百度地图初始化
         SDKInitializer.initialize(this);
+        serverList = new ArrayList<>();
 
         // android 7.0系统解决拍照的问题
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {

@@ -40,6 +40,7 @@ import cn.njmeter.intelligenthydrant.R;
 import cn.njmeter.intelligenthydrant.activity.BaseActivity;
 import cn.njmeter.intelligenthydrant.activity.HtmlActivity;
 import cn.njmeter.intelligenthydrant.activity.MainActivity;
+import cn.njmeter.intelligenthydrant.constant.ApkInfo;
 import cn.njmeter.intelligenthydrant.loginregister.bean.ClientUser;
 import cn.njmeter.intelligenthydrant.constant.Constants;
 import cn.njmeter.intelligenthydrant.network.ExceptionHandle;
@@ -347,10 +348,11 @@ public class LoginRegisterActivity extends BaseActivity {
             showToast("请输入密码");
             return;
         }
-        Map<String, String> params = new HashMap<>(3);
+        Map<String, String> params = new HashMap<>(4);
         params.put("loginName", userName);
         params.put("password", passWord);
         params.put("versionCode", String.valueOf(ApkUtils.getVersionCode(context)));
+        params.put("apkTypeId", ApkInfo.APK_TYPE_ID_HYDRANT);
         Observable<String> clientUserObservable = NetClient.getInstances(NetClient.BASE_URL_PROJECT).getNjMeterApi().loginMainAccount(params);
         clientUserObservable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new NetworkSubscriber<String>(context, getClass().getSimpleName()) {
 
@@ -364,7 +366,7 @@ public class LoginRegisterActivity extends BaseActivity {
                         unsubscribe();
                     }
                 } else {
-                    showLoadingDialog(context, "登陆中，请稍后", true);
+                    showLoadingDialog(context, "登陆中", true);
                 }
             }
 
@@ -445,7 +447,7 @@ public class LoginRegisterActivity extends BaseActivity {
                         unsubscribe();
                     }
                 } else {
-                    showLoadingDialog(context, "注册中，请稍后", true);
+                    showLoadingDialog(context, "注册中", true);
                 }
             }
 

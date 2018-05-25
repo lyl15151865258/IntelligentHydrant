@@ -177,7 +177,7 @@ public class ChangePasswordActivity extends BaseActivity {
                         unsubscribe();
                     }
                 } else {
-                    showLoadingDialog(mContext, "更新密码中，请稍后", true);
+                    showLoadingDialog(mContext, "更新中", true);
                 }
             }
 

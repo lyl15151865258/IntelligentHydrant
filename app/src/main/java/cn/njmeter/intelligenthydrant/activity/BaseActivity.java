@@ -1,7 +1,6 @@
 package cn.njmeter.intelligenthydrant.activity;
 
 import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -21,12 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +34,7 @@ import cn.njmeter.intelligenthydrant.utils.LanguageUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
 import cn.njmeter.intelligenthydrant.utils.ScreenTools;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
+import cn.njmeter.intelligenthydrant.widget.LoadingDialog;
 
 /**
  * 父类activity
@@ -51,7 +47,7 @@ import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private Toast toast;
-    private Dialog dialog;
+    private LoadingDialog loadingDialog;
     protected int mWidth;
     protected int mHeight;
     protected float mDensity;
@@ -76,7 +72,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         mHeight = dm.heightPixels;
         mRatio = Math.min((float) mWidth / 720, (float) mHeight / 1280);
         mAvatarSize = (int) (50 * mDensity);
-        dialog = new Dialog(this, R.style.loading_dialog);
+        loadingDialog = new LoadingDialog(this, R.style.loading_dialog);
         changeAppLanguage();
         //程序长期在后台运行再打开的时候fragment重新加载问题
 //        if (savedInstanceState != null) {
@@ -397,35 +393,46 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @param cancelable 是否可取消
      */
     public void showLoadingDialog(Context context, String msg, boolean cancelable) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.dialog_loading, findViewById(android.R.id.content), false);
-        LinearLayout layout = view.findViewById(R.id.dialog_view);
-        //自定义图片
-        ImageView ivImg = view.findViewById(R.id.iv_dialogLoading_img);
-        // 提示文字
-        TextView tvMsg = view.findViewById(R.id.tv_dialogLoading_msg);
-        // 加载动画
-        Animation animation = AnimationUtils.loadAnimation(context, R.anim.loading_animation);
-        // 使用ImageView显示动画
-        ivImg.startAnimation(animation);
-        if (null != msg) {
-            // 设置加载信息
-            tvMsg.setText(msg);
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        } else {
+            loadingDialog = new LoadingDialog(this, R.style.loading_dialog);
+            loadingDialog.setCancelable(cancelable);
+
+            if (!((AppCompatActivity) context).isFinishing()) {
+                //显示dialog
+                loadingDialog.show();
+                loadingDialog.setMessage(msg);
+            }
         }
-        // 不可以用“返回键”取消
-        dialog.setCancelable(cancelable);
-        // 设置布局
-        dialog.setContentView(layout, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-        //显示dialog
-        dialog.show();
+    }
+
+    /**
+     * 显示加载的dialogs
+     *
+     * @param context    Context对象
+     * @param cancelable 是否可取消
+     */
+    public void showLoadingDialog(Context context, boolean cancelable) {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        } else {
+            loadingDialog = new LoadingDialog(this, R.style.loading_dialog);
+            loadingDialog.setCancelable(cancelable);
+
+            if (!((AppCompatActivity) context).isFinishing()) {
+                //显示dialog
+                loadingDialog.show();
+            }
+        }
     }
 
     /**
      * 取消dialog显示
      */
     public void cancelDialog() {
-        if (null != dialog) {
-            dialog.dismiss();
+        if (null != loadingDialog && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
         }
     }
 

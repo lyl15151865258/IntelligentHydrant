@@ -97,7 +97,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
+        SurfaceView surfaceView = findViewById(R.id.preview_view);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
         if (hasSurface) {
             initCamera(surfaceHolder);
@@ -304,7 +304,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
     }
 
     /**
-     * 当前散光灯是否打开
+     * 当前闪光灯是否打开
      *
      * @return
      */
@@ -335,8 +335,7 @@ public class CaptureActivity extends BaseActivity implements Callback {
             return;
         }
         if (handler == null) {
-            handler = new CaptureActivityHandler(this, decodeFormats,
-                    characterSet);
+            handler = new CaptureActivityHandler(this, decodeFormats, characterSet);
         }
     }
 

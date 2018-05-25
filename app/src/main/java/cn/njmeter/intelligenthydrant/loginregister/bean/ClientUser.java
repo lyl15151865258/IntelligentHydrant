@@ -971,7 +971,7 @@ public class ClientUser implements Serializable {
 
     }
 
-    public class Server {
+    public class Server implements Serializable {
 
         private int serverConfigId;
         private String serverHost;

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import cn.njmeter.intelligenthydrant.HydrantApplication;
+
 /**
  * Activity栈队列管理类
  * Activity管理类，获取当前显示的Activity实例
@@ -96,6 +98,7 @@ public class ActivityController {
     public static void exit() {
         //清除全局对象
         SharedPreferencesUtils.getInstance().clearData("account");
+        HydrantApplication.loginSuccess = false;
         //用来装需要删除的Activity对象
         List<Activity> delList = new ArrayList<>();
         for (Activity activity : activities) {
