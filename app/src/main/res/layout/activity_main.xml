@@ -126,32 +126,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <include layout="@layout/hydrant_info_board" />
-
-            <RelativeLayout
-                android:id="@+id/popupPOIMarker"
+            <View
+                android:id="@+id/btnBg"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:visibility="gone">
+                android:background="@color/colorBgDark"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone" />
 
-                <ImageView
-                    android:id="@+id/picture"
-                    android:layout_width="@dimen/dp_60"
-                    android:layout_height="@dimen/dp_60"
-                    android:layout_above="@+id/view_center"
-                    android:layout_centerHorizontal="true"
-                    android:contentDescription="@null"
-                    android:padding="@dimen/dp_3"
-                    android:scaleType="centerCrop"
-                    android:src="@mipmap/icon_hydrant_online" />
-
-                <View
-                    android:id="@+id/view_center"
-                    android:layout_width="@dimen/dp_0"
-                    android:layout_height="@dimen/dp_0"
-                    android:layout_centerInParent="true" />
-            </RelativeLayout>
+            <include layout="@layout/hydrant_info_board" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -189,10 +173,12 @@
                     android:layout_centerInParent="true" />
 
                 <ImageView
+                    android:id="@+id/iv_center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/center"
                     android:layout_centerHorizontal="true"
+                    android:visibility="gone"
                     android:src="@drawable/search_center_ic" />
 
                 <ImageView

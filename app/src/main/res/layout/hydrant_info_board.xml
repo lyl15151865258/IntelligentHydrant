@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ll_poiDetails"
+    android:id="@+id/popupPOIDetails"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/dp_5"
@@ -28,7 +28,7 @@
             android:layout_height="80dp"
             android:contentDescription="@null"
             android:scaleType="centerCrop"
-            app:srcCompat="@mipmap/hydrant_logo" />
+            app:srcCompat="@mipmap/photo_hydrant" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,26 +84,6 @@
         android:paddingTop="5dp">
 
         <cn.njmeter.intelligenthydrant.widget.textview.DrawableStartCenterTextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/selector_background"
-            android:clickable="true"
-            android:drawablePadding="10dp"
-            android:drawableStart="@mipmap/btn_nav"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:text="详情"
-            android:textColor="@color/colorTheme"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="1px"
-            android:layout_height="15dp"
-            android:background="@color/colorLightGray" />
-
-        <cn.njmeter.intelligenthydrant.widget.textview.DrawableStartCenterTextView
             android:id="@+id/btnNav"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -116,6 +96,48 @@
             android:gravity="center_vertical"
             android:maxLines="1"
             android:text="去这里"
+            android:textColor="@color/colorTheme"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="15dp"
+            android:background="@color/colorLightGray" />
+
+        <cn.njmeter.intelligenthydrant.widget.textview.DrawableStartCenterTextView
+            android:id="@+id/btnOpen"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/selector_background"
+            android:clickable="true"
+            android:drawablePadding="10dp"
+            android:drawableStart="@mipmap/btn_nav"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:text="开锁"
+            android:textColor="@color/colorTheme"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="1px"
+            android:layout_height="15dp"
+            android:background="@color/colorLightGray" />
+
+        <cn.njmeter.intelligenthydrant.widget.textview.DrawableStartCenterTextView
+            android:id="@+id/btnClose"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/selector_background"
+            android:clickable="true"
+            android:drawablePadding="10dp"
+            android:drawableStart="@mipmap/btn_nav"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:text="关锁"
             android:textColor="@color/colorTheme"
             android:textSize="14sp" />
     </LinearLayout>

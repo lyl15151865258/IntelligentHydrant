@@ -215,6 +215,9 @@ public class SetSubAccountActivity extends BaseActivity {
                             HydrantApplication.getInstance().setAccount(clientUser.getAccount());
                             HydrantApplication.getInstance().setVersion(clientUser.getVersion());
                             showToast("账号信息更新成功");
+                            Intent intent = new Intent();
+                            intent.setAction("login");
+                            sendBroadcast(intent);
                             ActivityController.finishActivity(SetSubAccountActivity.this);
                             break;
                         case Constants.FAIL:

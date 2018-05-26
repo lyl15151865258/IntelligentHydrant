@@ -1,9 +1,11 @@
 package cn.njmeter.intelligenthydrant.activity;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -32,14 +34,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
-import com.baidu.location.LocationClient;
-import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
-import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -47,6 +46,10 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.search.route.PlanNode;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.bumptech.glide.Glide;
@@ -77,6 +80,7 @@ import cn.njmeter.intelligenthydrant.BuildConfig;
 import cn.njmeter.intelligenthydrant.HydrantApplication;
 import cn.njmeter.intelligenthydrant.R;
 import cn.njmeter.intelligenthydrant.bean.EventMsg;
+import cn.njmeter.intelligenthydrant.bean.HydrantClusterItem;
 import cn.njmeter.intelligenthydrant.bean.HydrantLastData;
 import cn.njmeter.intelligenthydrant.bean.SocketConstant;
 import cn.njmeter.intelligenthydrant.bean.WaterMeterLoginResult;
@@ -90,6 +94,7 @@ import cn.njmeter.intelligenthydrant.map.MyOrientationListener;
 import cn.njmeter.intelligenthydrant.network.ExceptionHandle;
 import cn.njmeter.intelligenthydrant.network.NetClient;
 import cn.njmeter.intelligenthydrant.network.NetworkSubscriber;
+import cn.njmeter.intelligenthydrant.service.LocationService;
 import cn.njmeter.intelligenthydrant.service.SocketService;
 import cn.njmeter.intelligenthydrant.utils.ActivityController;
 import cn.njmeter.intelligenthydrant.utils.AnalysisUtils;
@@ -105,7 +110,6 @@ import cn.njmeter.intelligenthydrant.utils.NotificationsUtils;
 import cn.njmeter.intelligenthydrant.utils.SharedPreferencesUtils;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.utils.StringUtils;
-import cn.njmeter.intelligenthydrant.utils.clusterutil.clustering.ClusterItem;
 import cn.njmeter.intelligenthydrant.utils.clusterutil.clustering.ClusterManager;
 import cn.njmeter.intelligenthydrant.widget.CommonWarningDialog;
 import cn.njmeter.intelligenthydrant.widget.DownLoadDialog;
@@ -125,8 +129,7 @@ public class MainActivity extends BaseActivity {
     private Context mContext;
     private String serverHost, httpPort, serviceName, hieId;
     private DrawerLayout drawerLayout;
-    private LinearLayout llMain, llPoiDetails;
-    private RelativeLayout popupPOIMarker;
+    private LinearLayout llMain, popupPOIDetails;
     private TextView tvAllHydrant, tvFireHydrant, tvOtherHydrant;
     private ImageView mDingWei, mRefresh, mKefu;
     private RelativeLayout mRefreshAll;
@@ -135,8 +138,11 @@ public class MainActivity extends BaseActivity {
     private TextView tvNickName, tvCompanyName, tvPosition;
     private Button btnExit;
     private BaiduMap mBaiduMap;
-    public LocationClient mlocationClient;
     private MapStatus mapStatus;
+
+    private View btnBg;
+
+    private List<HydrantClusterItem> hydrantClusterItemList;
 
     private MyLocationConfiguration.LocationMode mCurrentMode;
     private double currentLatitude, currentLongitude, changeLatitude, changeLongitude;
@@ -152,9 +158,11 @@ public class MainActivity extends BaseActivity {
     private static final int HYDRANTTYPE_FIRE_HYDRANT = 1;
     private static final int HYDRANTTYPE_OTHER_HYDRANT = 2;
     private int CURRENT_HYDRANTTYPE = HYDRANTTYPE_ALL_HYDRANT;
-    private ClusterManager<MyItem> mClusterManager;
-    private MyItem mCurrentItem;
-    private boolean shouldUseLocation = true;
+
+    private LocationService locationService;
+    private ClusterManager<HydrantClusterItem> mClusterManager;
+    private HydrantClusterItem mCurrentItem;
+    private boolean shouldUseLocation = false;
 
     private BitmapDescriptor dotExpand = BitmapDescriptorFactory.fromResource(R.mipmap.icon_gcoding);
 
@@ -177,7 +185,6 @@ public class MainActivity extends BaseActivity {
      */
     public ExecutorService executorService;
 
-
     private ServiceConnection serviceConnection;
     public SocketService socketService;
 
@@ -186,17 +193,30 @@ public class MainActivity extends BaseActivity {
      */
     private boolean isConnectSuccess = false;
 
+    private boolean mapLoadedFinish = false;
+    private boolean hydrantAccountCorrect = false;
+
+    private LoginReceiver loginReceiver;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        hydrantClusterItemList = new ArrayList<>();
+
         mContext = this;
         initView();
-        initMap();
+        // 初始化百度地图
+        initMapView();
+        // 初始化定位相关
+        initLocation();
+        // 地理编码的初始化相关
+        initGeoCoder();
+        // 初始化点聚合管理
         initClusterManager();
-        requesPemission();
+        requestPermission();
         login();
 
         if (!NotificationsUtils.isNotificationEnabled(mContext)) {
@@ -231,6 +251,11 @@ public class MainActivity extends BaseActivity {
             return thread;
         });
 
+        loginReceiver = new LoginReceiver();
+        registerReceiver(loginReceiver, new IntentFilter("login"));
+
+        // 开启方向监听
+        initOrientation();
     }
 
     @Override
@@ -240,9 +265,50 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //保存地图当前的状态
+        mMapView.onSaveInstanceState(outState);
+    }
+
+    public class LoginReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            initMapView();
+            login();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         initPage();
+        mMapView.onResume();
+        locationService.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mMapView.onPause();
+        locationService.stop();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //关闭定位
+        mBaiduMap.setMyLocationEnabled(false);
+        locationService.stop();
+        //停止方向传感器
+        myOrientationListener.stop();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        mBaiduMap.setMyLocationEnabled(true);
+        myOrientationListener.start();
     }
 
     private void initView() {
@@ -253,8 +319,7 @@ public class MainActivity extends BaseActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         llMain = findViewById(R.id.ll_main);
-        llPoiDetails = findViewById(R.id.ll_poiDetails);
-        popupPOIMarker = findViewById(R.id.popupPOIMarker);
+        popupPOIDetails = findViewById(R.id.popupPOIDetails);
         tvAllHydrant = findViewById(R.id.tv_allHydrant);
         tvFireHydrant = findViewById(R.id.tv_fireHydrant);
         tvOtherHydrant = findViewById(R.id.tv_otherHydrant);
@@ -283,6 +348,9 @@ public class MainActivity extends BaseActivity {
         tvNickName = findViewById(R.id.tv_nickName);
         tvCompanyName = findViewById(R.id.tv_companyName);
         tvPosition = findViewById(R.id.tv_position);
+
+        btnBg = findViewById(R.id.btnBg);
+        btnBg.setOnClickListener(onClickListener);
 
         (findViewById(R.id.ll_login)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_setMainAccount)).setOnClickListener(onClickListener);
@@ -558,6 +626,11 @@ public class MainActivity extends BaseActivity {
     private View.OnClickListener onClickListener = (view) -> {
         ClientUser.Account account = HydrantApplication.getInstance().getAccount();
         switch (view.getId()) {
+            case R.id.btnBg:
+                btnBg.setVisibility(View.GONE);
+                popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_hide));
+                popupPOIDetails.setVisibility(View.GONE);
+                break;
             case R.id.iv_icon:
                 drawerLayout.openDrawer(GravityCompat.START);
                 break;
@@ -642,38 +715,127 @@ public class MainActivity extends BaseActivity {
         }
     };
 
-    private void initMap() {
+    private void initMapView() {
+        mapStatus = new MapStatus.Builder()
+                // 缩放级别3--21：默认的是12
+                .zoom(17)
+                // 俯仰的角度
+                .overlook(0)
+                // 旋转的角度
+                .rotate(0)
+                .build();
         mBaiduMap = mMapView.getMap();
         mBaiduMap.setMyLocationEnabled(true);
-        mlocationClient = new LocationClient(getApplicationContext());
-        mlocationClient.registerLocationListener(new MylocationListener());
         // 隐藏比例尺控件
         //  mMapView.showScaleControl(false);
         //隐藏缩放按钮
         mMapView.showZoomControls(false);
-        LocationClientOption option = new LocationClientOption();
-        // 打开gps
-        option.setOpenGps(true);
-        // 设置坐标类型
-        option.setCoorType("bd09ll");
-        // 设置onReceiveLocation()获取位置的频率
-        option.setScanSpan(5000);
-        //如想获得具体位置就需要设置为true
-        option.setIsNeedAddress(true);
-        mlocationClient.setLocOption(option);
-        mlocationClient.start();
+
         mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
-        mBaiduMap.setMyLocationConfigeration(new MyLocationConfiguration(mCurrentMode, true, null));
+        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(mCurrentMode, true, null));
+
+        //监听加载完成
+        mBaiduMap.setOnMapLoadedCallback(onMapLoadedCallback);
+        // 激活定位图层
+        mBaiduMap.setMyLocationEnabled(true);
+        MapStatusUpdate update = MapStatusUpdateFactory.newMapStatus(mapStatus);
+        // 更新展示的地图的状态
+        mBaiduMap.animateMapStatus(update);
+    }
+
+    private BaiduMap.OnMapLoadedCallback onMapLoadedCallback = () -> {
+        mapLoadedFinish = true;
+        initAllHydrant();
+    };
+
+    /**
+     * 开启方向监听
+     */
+    private void initOrientation() {
         myOrientationListener = new MyOrientationListener(this);
         //通过接口回调来实现实时方向的改变
-        myOrientationListener.setOnOrientationListener(new MyOrientationListener.OnOrientationListener() {
-            @Override
-            public void onOrientationChanged(float x) {
-                mCurrentX = x;
-            }
+        myOrientationListener.setOnOrientationListener((x) -> {
+            mCurrentX = x;
         });
         myOrientationListener.start();
     }
+
+    /**
+     * 初始化定位相关
+     */
+    private void initLocation() {
+        locationService = ((HydrantApplication) getApplication()).locationService;
+        locationService.registerListener(bdAbstractLocationListener);
+    }
+
+    /**
+     * 地理编码的初始化相关
+     */
+    private void initGeoCoder() {
+        // 初始化：创建出一个地理编码查询的对象
+        GeoCoder mGeoCoder = GeoCoder.newInstance();
+        // 设置查询结果的监听:地理编码的监听
+        mGeoCoder.setOnGetGeoCodeResultListener(mGeoCoderResultListener);
+    }
+
+    /**
+     * 地理编码的监听
+     */
+    private OnGetGeoCoderResultListener mGeoCoderResultListener = new OnGetGeoCoderResultListener() {
+        // 得到地理编码的结果：地址-->经纬度
+        @Override
+        public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+        }
+
+        // 得到反向地理编码的结果：经纬度-->地址
+        @Override
+        public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
+            // 当前是拿到结果以后给标题录入的卡片上面的文本设置上
+//            if (reverseGeoCodeResult == null) {
+//                mCurrentAddr = "未知的位置";
+//                return;
+//            }
+            // 拿到反地理编码得到的地址信息
+//            mCurrentAddr = reverseGeoCodeResult.getAddress();
+            // 将地址信息给TextView设置上
+//            mTvCurrentLocation.setText(mCurrentAddr);
+        }
+    };
+
+    /**
+     * 定位监听
+     */
+    private BDAbstractLocationListener bdAbstractLocationListener = new BDAbstractLocationListener() {
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            if (bdLocation == null || mBaiduMap == null) {
+                return;
+            }
+            mBDLocation = bdLocation;
+            MyLocationData locData = new MyLocationData.Builder()
+                    .accuracy(0f)
+                    //设定图标方向，此处设置开发者获取到的方向信息，顺时针0-360
+                    .direction(mCurrentX)
+                    .latitude(bdLocation.getLatitude())
+                    .longitude(bdLocation.getLongitude()).build();
+            mBaiduMap.setMyLocationData(locData);
+            currentLatitude = bdLocation.getLatitude();
+            currentLongitude = bdLocation.getLongitude();
+            mCurrentLocation = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
+            MyLocationManager.getInstance().setCurrentLL(mCurrentLocation);
+            MyLocationManager.getInstance().setAddress(bdLocation.getAddrStr());
+            startNodeStr = PlanNode.withLocation(mCurrentLocation);
+            if (isFirstLocation) {
+                isFirstLocation = false;
+                moveToPoint(mCurrentLocation);
+                changeLatitude = bdLocation.getLatitude();
+                changeLongitude = bdLocation.getLongitude();
+                if (!isServiceLive) {
+//                    addOverLayout(currentLatitude, currentLongitude);
+                }
+            }
+        }
+    };
 
     private void initClusterManager() {
         // 定义点聚合管理类ClusterManager
@@ -723,49 +885,11 @@ public class MainActivity extends BaseActivity {
 //            hydrantLocation = latLng;
 //            hydrantLocationAddress = hydrantAddress;
             moveToPoint(latLng);
-            popupPOIMarker.setVisibility(View.VISIBLE);
-            llPoiDetails.setVisibility(View.VISIBLE);
-            llPoiDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_show));
+            btnBg.setVisibility(View.VISIBLE);
+            popupPOIDetails.setVisibility(View.VISIBLE);
+            popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_show));
             return false;
         });
-    }
-
-    /**
-     * bd地图监听，接收当前位置
-     */
-    public class MylocationListener implements BDLocationListener {
-
-        @Override
-        public void onReceiveLocation(BDLocation bdLocation) {
-            if (bdLocation == null || mBaiduMap == null) {
-                return;
-            }
-            mBDLocation = bdLocation;
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(bdLocation.getRadius())
-                    //设定图标方向，此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(mCurrentX)
-                    .latitude(bdLocation.getLatitude())
-                    .longitude(bdLocation.getLongitude()).build();
-            if (shouldUseLocation) {
-                mBaiduMap.setMyLocationData(locData);
-            }
-            currentLatitude = bdLocation.getLatitude();
-            currentLongitude = bdLocation.getLongitude();
-            mCurrentLocation = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
-            MyLocationManager.getInstance().setCurrentLL(mCurrentLocation);
-            MyLocationManager.getInstance().setAddress(bdLocation.getAddrStr());
-            startNodeStr = PlanNode.withLocation(mCurrentLocation);
-            if (isFirstLocation) {
-                isFirstLocation = false;
-                moveToPoint(mCurrentLocation);
-                changeLatitude = bdLocation.getLatitude();
-                changeLongitude = bdLocation.getLongitude();
-                if (!isServiceLive) {
-//                    addOverLayout(currentLatitude, currentLongitude);
-                }
-            }
-        }
     }
 
     private void Go2myLotionAndRefresh() {
@@ -782,7 +906,7 @@ public class MainActivity extends BaseActivity {
      * 请求得到所有的消火栓
      */
     private void initAllHydrant() {
-        if (!HydrantApplication.loginSuccess) {
+        if (!HydrantApplication.loginSuccess || !mapLoadedFinish || !hydrantAccountCorrect) {
             return;
         }
         ClientUser.Account account = HydrantApplication.getInstance().getAccount();
@@ -823,7 +947,7 @@ public class MainActivity extends BaseActivity {
                     List<HydrantLastData.Data> hydrantList = hydrantLastData.getData();
                     String result = hydrantLastData.getResult();
                     if (Constants.SUCCESS.equals(result)) {
-                        List<MyItem> myItemList = new ArrayList<>();
+                        hydrantClusterItemList.clear();
                         for (int i = 0; i < hydrantList.size(); i++) {
                             //不显示没有坐标信息的消火栓
                             if (0 != hydrantList.get(i).getLat() && 0 != hydrantList.get(i).getLng()) {
@@ -850,10 +974,10 @@ public class MainActivity extends BaseActivity {
                                 }
                                 String createTime = hydrant.getCreate_time();
                                 String hydrantAddress = hydrant.getAddress();
-                                myItemList.add(new MyItem(latLng, hydrantId, hydrantType, createTime, hydrantAddress));
+                                hydrantClusterItemList.add(new HydrantClusterItem(latLng, hydrantId, hydrantType, createTime, hydrantAddress));
                             }
                         }
-                        addMarkers(myItemList);
+                        addMarkers(hydrantClusterItemList);
                     }
                 }
             }
@@ -863,27 +987,29 @@ public class MainActivity extends BaseActivity {
     /**
      * 添加覆盖物
      */
-    private void addMarkers(List<MyItem> myItemList) {
-        LogUtils.d("List的长度是：" + myItemList.size());
+    private void addMarkers(List<HydrantClusterItem> hydrantClusterItemList) {
+        LogUtils.d("List的长度是：" + hydrantClusterItemList.size());
         mClusterManager.clearItems();
         LatLng centerPoint;
-        if (myItemList.size() == 0) {
+        if (hydrantClusterItemList.size() == 0) {
             showToast("没有查询到消火栓");
             centerPoint = mCurrentLocation;
-        } else if (myItemList.size() == 1) {
-            mClusterManager.addItems(myItemList);
-            centerPoint = myItemList.get(0).getPosition();
+        } else if (hydrantClusterItemList.size() == 1) {
+            mClusterManager.addItems(hydrantClusterItemList);
+            centerPoint = hydrantClusterItemList.get(0).getPosition();
         } else {
             double longitude = 0;
             double latitude = 0;
-            for (MyItem myItem : myItemList) {
-                longitude += myItem.getPosition().longitude;
-                latitude += myItem.getPosition().latitude;
+            for (HydrantClusterItem hydrantClusterItem : hydrantClusterItemList) {
+                longitude += hydrantClusterItem.getPosition().longitude;
+                latitude += hydrantClusterItem.getPosition().latitude;
             }
-            mClusterManager.addItems(myItemList);
-            centerPoint = new LatLng(latitude / myItemList.size(), longitude / myItemList.size());
+            mClusterManager.addItems(hydrantClusterItemList);
+            centerPoint = new LatLng(latitude / hydrantClusterItemList.size(), longitude / hydrantClusterItemList.size());
         }
-        moveToPoint(centerPoint);
+        if (!shouldUseLocation) {
+            moveToPoint(centerPoint);
+        }
     }
 
     /**
@@ -903,53 +1029,6 @@ public class MainActivity extends BaseActivity {
         MapStatusUpdate update = MapStatusUpdateFactory.newMapStatus(mapStatus);
         // 更新展示的地图的状态
         mBaiduMap.animateMapStatus(update);
-    }
-
-    /**
-     * 每个Marker点，包含Marker点坐标以及图标
-     */
-    public class MyItem implements ClusterItem {
-
-        private final LatLng mPosition;
-        private final int hydrantId;
-        private final String hydrantType;
-        private final String createTime;
-        private final String hydrantAddress;
-
-        public MyItem(LatLng latLng, int hydrantId, String hydrantType, String createTime, String hydrantAddress) {
-            mPosition = latLng;
-            this.hydrantId = hydrantId;
-            this.hydrantType = hydrantType;
-            this.createTime = createTime;
-            this.hydrantAddress = hydrantAddress;
-        }
-
-        @Override
-        public LatLng getPosition() {
-            return mPosition;
-        }
-
-        public int getHydrantId() {
-            return hydrantId;
-        }
-
-        public String getHydrantType() {
-            return hydrantType;
-        }
-
-        public String getCreateTime() {
-            return createTime;
-        }
-
-        public String getHydrantAddress() {
-            return hydrantAddress;
-        }
-
-        @Override
-        public BitmapDescriptor getBitmapDescriptor() {
-            return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_online);
-        }
-
     }
 
     /**
@@ -1003,19 +1082,19 @@ public class MainActivity extends BaseActivity {
     /**
      * 权限申请
      */
-    private void requesPemission() {
-        List<String> permissionlist = new ArrayList<>();
+    private void requestPermission() {
+        List<String> permissionList = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            permissionlist.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            permissionlist.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            permissionlist.add(Manifest.permission.READ_PHONE_STATE);
+            permissionList.add(Manifest.permission.READ_PHONE_STATE);
         }
-        if (!permissionlist.isEmpty()) {
-            String[] perssions = permissionlist.toArray(new String[permissionlist.size()]);
+        if (!permissionList.isEmpty()) {
+            String[] perssions = permissionList.toArray(new String[permissionList.size()]);
             ActivityCompat.requestPermissions(MainActivity.this, perssions, 1);
         } else {
             //   requestionLotion();
@@ -1091,6 +1170,7 @@ public class MainActivity extends BaseActivity {
                             HydrantApplication.getInstance().setAccount(clientUser.getAccount());
                             HydrantApplication.getInstance().setVersion(clientUser.getVersion());
                             HydrantApplication.getInstance().setVersion2(clientUser.getVersion2());
+                            HydrantApplication.getInstance().serverList = clientUser.getServer();
                             initPage();
                             checkNewVersion();
                             //注册极光推送别名
@@ -1156,6 +1236,7 @@ public class MainActivity extends BaseActivity {
                                 //消火栓信息
                                 SharedPreferencesUtils.getInstance().saveData("loginId", data.getLogin_id());
                                 SharedPreferencesUtils.getInstance().saveData("hie_id", data.getHie_id());
+                                hydrantAccountCorrect = true;
                                 initAllHydrant();
                                 String socketPort = HydrantApplication.getInstance().getAccount().getSocket_Port_CS();
                                 String loginId = (String) SharedPreferencesUtils.getInstance().getData("loginId", "");
@@ -1443,7 +1524,17 @@ public class MainActivity extends BaseActivity {
             case REQUEST_CODE_UNLOCK:
                 if (RESULT_OK == resultCode) {
                     String hydrantId = data.getStringExtra("result");
-
+                    boolean hasHydrant = false;
+                    for (HydrantClusterItem hydrantClusterItem : hydrantClusterItemList) {
+                        if (String.valueOf(hydrantClusterItem.getHydrantId()).equals(hydrantId)) {
+                            moveToPoint(hydrantClusterItem.getPosition());
+                            hasHydrant = true;
+                            break;
+                        }
+                    }
+                    if (!hasHydrant) {
+                        showToast("没有找到该消火栓");
+                    }
                 }
                 break;
             default:
@@ -1460,6 +1551,10 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         }
+        if (btnBg.getVisibility() == View.VISIBLE) {
+            btnBg.performClick();
+            return true;
+        }
         return super.onKeyDown(keyCode, event);
     }
 
@@ -1475,5 +1570,14 @@ public class MainActivity extends BaseActivity {
             EventBus.getDefault().unregister(this);
         }
         executorService.shutdown();
+        mMapView.onDestroy();
+        locationService.unregisterListener(bdAbstractLocationListener);
+        if (loginReceiver != null) {
+            try {
+                unregisterReceiver(loginReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

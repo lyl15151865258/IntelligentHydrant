@@ -398,6 +398,7 @@ public class LoginRegisterActivity extends BaseActivity {
                             HydrantApplication.getInstance().setAccount(clientUser.getAccount());
                             HydrantApplication.getInstance().setVersion(clientUser.getVersion());
                             HydrantApplication.getInstance().setVersion2(clientUser.getVersion2());
+                            HydrantApplication.getInstance().serverList = clientUser.getServer();
                             //注册极光推送别名
                             JPushInterface.setAlias(getApplicationContext(), 0, String.valueOf(HydrantApplication.getInstance().getAccount().getLoginId()));
                             openActivity(MainActivity.class);
@@ -475,6 +476,7 @@ public class LoginRegisterActivity extends BaseActivity {
                             HydrantApplication.getInstance().setAccount(clientUser.getAccount());
                             HydrantApplication.getInstance().setVersion(clientUser.getVersion());
                             HydrantApplication.getInstance().setVersion2(clientUser.getVersion2());
+                            HydrantApplication.getInstance().serverList = clientUser.getServer();
                             showToast("注册成功");
                             //切换到登录页面
                             rlLogin.setVisibility(View.VISIBLE);

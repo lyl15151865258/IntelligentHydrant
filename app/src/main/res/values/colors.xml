@@ -660,5 +660,6 @@
     <color name="button_set_price_start">#f0268e</color>
     <color name="button_set_price_end">#e8245f</color>
     <color name="button_set_price">#fe5539</color>
+    <color name="text_account">#F05B48</color>
     <color name="message_confirm">#FF7E7D</color>
 </resources>

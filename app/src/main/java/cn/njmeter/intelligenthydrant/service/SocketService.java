@@ -129,8 +129,6 @@ public class SocketService extends Service {
                         //发送注册信息成功，则开始Socket通信
                         if (sendMsg(NetWork.ANDROID_LOGIN + loginId + NetWork.ANDROID_END)) {
 
-                            showToast("Socket连接成功");
-
                             //发送连接成功的消息
                             EventMsg msg = new EventMsg();
                             msg.setTag(Constants.CONNECT_SUCCESS_SOCKET);

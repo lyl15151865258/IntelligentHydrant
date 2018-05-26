@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.njmeter.intelligenthydrant.loginregister.bean.ClientUser;
+import cn.njmeter.intelligenthydrant.service.LocationService;
 import cn.njmeter.intelligenthydrant.utils.CrashHandler;
 import cn.njmeter.intelligenthydrant.utils.GsonUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
@@ -34,6 +35,7 @@ public class HydrantApplication extends MultiDexApplication {
     private ClientUser.Version version;
     private ClientUser.Version2 version2;
     public List<ClientUser.Server> serverList;
+    public LocationService locationService;
     public static boolean loginSuccess;
 
     @Override
@@ -49,6 +51,8 @@ public class HydrantApplication extends MultiDexApplication {
         SharedPreferencesUtils.init(this);
         //百度地图初始化
         SDKInitializer.initialize(this);
+        locationService = new LocationService(getApplicationContext());
+
         serverList = new ArrayList<>();
 
         // android 7.0系统解决拍照的问题
