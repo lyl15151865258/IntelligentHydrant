@@ -46,8 +46,11 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
 
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <!-- 避免Android8.0安装APK时提示解析安装包错误 -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".HydrantApplication"
@@ -73,98 +76,92 @@
         <!-- 登录注册页面 -->
         <activity
             android:name=".loginregister.activity.LoginRegisterActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 更换密码页面 -->
         <activity
             android:name=".loginregister.activity.ChangePasswordActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 找回密码页面 -->
         <activity
             android:name=".loginregister.activity.RetrievePasswordActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 主页 -->
         <activity
             android:name=".activity.MainActivity"
-            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustPan" />
+
+        <!-- 管理员选择水司页面 -->
+        <activity
+            android:name=".activity.ChooseCompanyActivity"
+            android:windowSoftInputMode="adjustPan" />
+
+        <!-- 设置地图默认缩放级别 -->
+        <activity
+            android:name=".activity.MapZoomLevelActivity"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 联系我们 -->
         <activity
             android:name=".activity.ContactUsActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 图片裁剪页面 -->
         <activity
             android:name=".activity.CropActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 通用Html页面 -->
         <activity
             android:name=".activity.HtmlActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 选择服务器页面 -->
         <activity
             android:name=".activity.ServerConfigurationActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 设置公司信息页面 -->
         <activity
             android:name=".activity.SetCompanyActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 设置主账号信息页面 -->
         <activity
             android:name=".activity.SetMainAccountActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 设置昵称页面 -->
         <activity
             android:name=".activity.SetNickNameActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 设置子账号信息页面 -->
         <activity
             android:name=".activity.SetSubAccountActivity"
             android:configChanges="orientation|keyboardHidden"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait" />
 
         <!-- 绑定第三方账号页面 -->
         <activity
             android:name=".activity.SocialAccountsActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 版本信息页面 -->
         <activity
             android:name=".activity.VersionsActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 扫描二维码页面 -->
         <activity
             android:name=".activity.CaptureActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 手动输入消火栓编号页面 -->
         <activity
             android:name=".activity.QRCodeInputActivity"
-            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustPan" />
 
         <!-- 百度地图定位服务 -->

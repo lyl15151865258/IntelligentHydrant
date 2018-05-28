@@ -37,40 +37,144 @@
             android:paddingEnd="0dp"
             android:paddingStart="12.5dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvHydrantType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="智能消火栓"
+                    android:textColor="@color/colorDark"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/tvHydrantId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp_10"
+                    android:layout_marginStart="@dimen/dp_10"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="88888888"
+                    android:textColor="@color/colorDark"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvHydrantStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:textColor="@color/colorGray"
+                    android:textSize="@dimen/sp_14" />
+
+                <TextView
+                    android:id="@+id/tvHydrantDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp_10"
+                    android:layout_marginStart="@dimen/dp_10"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:text="100m"
+                    android:textColor="@color/colorGray"
+                    android:textSize="@dimen/sp_14" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
             <TextView
-                android:id="@+id/txtName"
+                android:id="@+id/tvHydrantAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="2"
-                android:text="智能消火栓88888888"
-                android:textColor="@color/colorDark"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="5dp"
-                android:layout_weight="1"
-                android:visibility="invisible" />
-
-            <TextView
-                android:id="@+id/txtAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:maxLines="1"
                 android:text="南京市江宁区滨江开发区喜燕路5号"
                 android:textColor="@color/colorGray"
-                android:textSize="13sp" />
+                android:textSize="@dimen/sp_14" />
 
-            <TextView
-                android:layout_width="0dp"
+            <View
+                android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                android:visibility="invisible" />
+                android:layout_weight="1" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llHydrantUsingStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/dp_12"
+        android:layout_marginStart="@dimen/dp_12"
+        android:background="@drawable/toolbar_background"
+        android:orientation="horizontal"
+        android:padding="@dimen/dp_5"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开锁时间："
+            android:textSize="@dimen/sp_14" />
+
+        <TextView
+            android:id="@+id/tvOpenTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/sp_14" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="当前用水："
+            android:textSize="@dimen/sp_14" />
+
+        <TextView
+            android:id="@+id/tvConsumption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/sp_14" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/tvUsingStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/sp_14" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -84,7 +188,7 @@
         android:paddingTop="5dp">
 
         <cn.njmeter.intelligenthydrant.widget.textview.DrawableStartCenterTextView
-            android:id="@+id/btnNav"
+            android:id="@+id/btnNavigation"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -112,7 +216,7 @@
             android:background="@drawable/selector_background"
             android:clickable="true"
             android:drawablePadding="10dp"
-            android:drawableStart="@mipmap/btn_nav"
+            android:drawableStart="@mipmap/btn_open"
             android:focusable="true"
             android:gravity="center_vertical"
             android:maxLines="1"
@@ -133,7 +237,7 @@
             android:background="@drawable/selector_background"
             android:clickable="true"
             android:drawablePadding="10dp"
-            android:drawableStart="@mipmap/btn_nav"
+            android:drawableStart="@mipmap/btn_close"
             android:focusable="true"
             android:gravity="center_vertical"
             android:maxLines="1"

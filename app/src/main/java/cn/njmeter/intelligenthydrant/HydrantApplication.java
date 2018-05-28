@@ -13,6 +13,7 @@ import java.util.List;
 
 import cn.njmeter.intelligenthydrant.loginregister.bean.ClientUser;
 import cn.njmeter.intelligenthydrant.service.LocationService;
+import cn.njmeter.intelligenthydrant.sqlite.DbHelper;
 import cn.njmeter.intelligenthydrant.utils.CrashHandler;
 import cn.njmeter.intelligenthydrant.utils.GsonUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
@@ -31,6 +32,10 @@ public class HydrantApplication extends MultiDexApplication {
     private static HydrantApplication instance;
 
     private Context mContext;
+    /**
+     * 全局数据库操作类
+     */
+    private DbHelper mDbHelper;
     private ClientUser.Account account;
     private ClientUser.Version version;
     private ClientUser.Version2 version2;
@@ -52,7 +57,6 @@ public class HydrantApplication extends MultiDexApplication {
         //百度地图初始化
         SDKInitializer.initialize(this);
         locationService = new LocationService(getApplicationContext());
-
         serverList = new ArrayList<>();
 
         // android 7.0系统解决拍照的问题
@@ -136,5 +140,17 @@ public class HydrantApplication extends MultiDexApplication {
         this.version2 = version2;
     }
 
+    public DbHelper getmDbHelper() {
+        if (mDbHelper == null) {
+            mDbHelper = new DbHelper(mContext);
+            mDbHelper.getDBHelper();
+            mDbHelper.open();
+        }
+        return mDbHelper;
+    }
+
+    public void setmDbHelper(DbHelper dbHelper) {
+        mDbHelper = dbHelper;
+    }
 
 }

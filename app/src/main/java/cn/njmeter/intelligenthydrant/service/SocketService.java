@@ -120,7 +120,7 @@ public class SocketService extends Service {
         if (socket == null && connectThread == null) {
             socket = new Socket();
             connectThread = () -> {
-                Log.i(TAG, "创建线程：" + Thread.currentThread().getId());
+                Log.i(TAG, "Socket配置：ip:" + ip + ",port:" + port + ",loginId:" + loginId);
                 try {
                     //超时时间为5秒
                     socket.connect(new InetSocketAddress(ip, Integer.valueOf(port)), 5000);

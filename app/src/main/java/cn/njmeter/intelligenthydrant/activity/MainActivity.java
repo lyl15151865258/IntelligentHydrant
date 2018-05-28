@@ -23,6 +23,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -37,8 +38,6 @@ import android.widget.TextView;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptor;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -49,6 +48,7 @@ import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.search.route.PlanNode;
 import com.baidu.mapapi.utils.DistanceUtil;
@@ -94,6 +94,7 @@ import cn.njmeter.intelligenthydrant.map.MyOrientationListener;
 import cn.njmeter.intelligenthydrant.network.ExceptionHandle;
 import cn.njmeter.intelligenthydrant.network.NetClient;
 import cn.njmeter.intelligenthydrant.network.NetworkSubscriber;
+import cn.njmeter.intelligenthydrant.network.bean.SocketPackage;
 import cn.njmeter.intelligenthydrant.service.LocationService;
 import cn.njmeter.intelligenthydrant.service.SocketService;
 import cn.njmeter.intelligenthydrant.utils.ActivityController;
@@ -110,12 +111,13 @@ import cn.njmeter.intelligenthydrant.utils.NotificationsUtils;
 import cn.njmeter.intelligenthydrant.utils.SharedPreferencesUtils;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.utils.StringUtils;
+import cn.njmeter.intelligenthydrant.utils.TimeUtils;
 import cn.njmeter.intelligenthydrant.utils.clusterutil.clustering.ClusterManager;
-import cn.njmeter.intelligenthydrant.widget.CommonWarningDialog;
-import cn.njmeter.intelligenthydrant.widget.DownLoadDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.CommonWarningDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.DownLoadDialog;
 import cn.njmeter.intelligenthydrant.widget.DownloadProgressBar;
-import cn.njmeter.intelligenthydrant.widget.ReDownloadWarningDialog;
-import cn.njmeter.intelligenthydrant.widget.UpgradeVersionDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.ReDownloadWarningDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.UpgradeVersionDialog;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -127,10 +129,11 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends BaseActivity {
 
     private Context mContext;
-    private String serverHost, httpPort, serviceName, hieId;
+    private String serverHost, httpPort, serviceName, hieId, loginId;
     private DrawerLayout drawerLayout;
-    private LinearLayout llMain, popupPOIDetails;
+    private LinearLayout llMain, popupPOIDetails, llHydrantUsingStatus;
     private TextView tvAllHydrant, tvFireHydrant, tvOtherHydrant;
+    private TextView tvHydrantType, tvHydrantId, tvHydrantStatus, tvHydrantDistance, tvHydrantAddress;
     private ImageView mDingWei, mRefresh, mKefu;
     private RelativeLayout mRefreshAll;
     private TextureMapView mMapView;
@@ -154,17 +157,14 @@ public class MainActivity extends BaseActivity {
     private boolean isFirstLocation = true;
 
     private BDLocation mBDLocation;
-    private static final int HYDRANTTYPE_ALL_HYDRANT = 0;
-    private static final int HYDRANTTYPE_FIRE_HYDRANT = 1;
-    private static final int HYDRANTTYPE_OTHER_HYDRANT = 2;
-    private int CURRENT_HYDRANTTYPE = HYDRANTTYPE_ALL_HYDRANT;
+    private GeoCoder mGeoCoder;
+    private static final int HYDRANT_TYPE_ALL_HYDRANT = 0, HYDRANT_TYPE_FIRE_HYDRANT = 1, HYDRANT_TYPE_OTHER_HYDRANT = 2;
+    private int CURRENT_HYDRANTTYPE = HYDRANT_TYPE_ALL_HYDRANT;
 
     private LocationService locationService;
     private ClusterManager<HydrantClusterItem> mClusterManager;
     private HydrantClusterItem mCurrentItem;
     private boolean shouldUseLocation = false;
-
-    private BitmapDescriptor dotExpand = BitmapDescriptorFactory.fromResource(R.mipmap.icon_gcoding);
 
     /**
      * 判断是否需要检查版本更新
@@ -177,8 +177,7 @@ public class MainActivity extends BaseActivity {
     private TextView tvUpdateLog, tvCompletedSize, tvTotalSize;
     private float apkSize, completedSize;
 
-    private static final int REQUEST_CODE_NOTIFICATION_SETTINGS = 1;
-    private static final int REQUEST_CODE_UNLOCK = 2;
+    private static final int REQUEST_CODE_CHOOSE_COMPANY = 1000, REQUEST_CODE_NOTIFICATION_SETTINGS = 1001, REQUEST_CODE_UNLOCK = 1002, REQUEST_CODE_ZOOM = 1003;
 
     /**
      * 线程池
@@ -196,8 +195,13 @@ public class MainActivity extends BaseActivity {
     private boolean mapLoadedFinish = false;
     private boolean hydrantAccountCorrect = false;
 
+    private boolean isAdminAccount = true;
+
+    private WaterMeterLoginResult loginResult;
+
     private LoginReceiver loginReceiver;
 
+    private TextView tvOpenTime, tvConsumption, tvUsingStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,7 +278,14 @@ public class MainActivity extends BaseActivity {
     public class LoginReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            hydrantClusterItemList.clear();
+            hidePoiDetails();
+            shouldUseLocation = false;
+            mClusterManager.clearItems();
+            mBaiduMap.clear();
             initMapView();
+            hieId = "";
+            loginId = "";
             login();
         }
     }
@@ -299,7 +310,6 @@ public class MainActivity extends BaseActivity {
         super.onStop();
         //关闭定位
         mBaiduMap.setMyLocationEnabled(false);
-        locationService.stop();
         //停止方向传感器
         myOrientationListener.stop();
     }
@@ -336,6 +346,15 @@ public class MainActivity extends BaseActivity {
         mKefu.setOnClickListener(onClickListener);
         findViewById(R.id.scan_qrcode).setOnClickListener(onClickListener);
 
+        tvHydrantType = findViewById(R.id.tvHydrantType);
+        tvHydrantId = findViewById(R.id.tvHydrantId);
+        tvHydrantStatus = findViewById(R.id.tvHydrantStatus);
+        tvHydrantDistance = findViewById(R.id.tvHydrantDistance);
+        tvHydrantAddress = findViewById(R.id.tvHydrantAddress);
+        findViewById(R.id.btnNavigation).setOnClickListener(onClickListener);
+        findViewById(R.id.btnOpen).setOnClickListener(onClickListener);
+        findViewById(R.id.btnClose).setOnClickListener(onClickListener);
+
         mMapView = findViewById(R.id.bmapview);
         setMyClickable(tvAllHydrant);
         mBaiduMap = mMapView.getMap();
@@ -356,12 +375,22 @@ public class MainActivity extends BaseActivity {
         (findViewById(R.id.ll_setMainAccount)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_setSubAccount)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_bindAccounts)).setOnClickListener(onClickListener);
+        (findViewById(R.id.llMapZoomLevel)).setOnClickListener(onClickListener);
+        (findViewById(R.id.llNavigationApp)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_update)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_version)).setOnClickListener(onClickListener);
         (findViewById(R.id.ll_share)).setOnClickListener(onClickListener);
 
+        (findViewById(R.id.ivSearch)).setOnClickListener(onClickListener);
+        (findViewById(R.id.ivMessage)).setOnClickListener(onClickListener);
+
         btnExit = findViewById(R.id.btn_exit);
         btnExit.setOnClickListener(onClickListener);
+
+        llHydrantUsingStatus = findViewById(R.id.llHydrantUsingStatus);
+        tvOpenTime = findViewById(R.id.tvOpenTime);
+        tvConsumption = findViewById(R.id.tvConsumption);
+        tvUsingStatus = findViewById(R.id.tvUsingStatus);
 
         drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -420,23 +449,28 @@ public class MainActivity extends BaseActivity {
                 for (int i = 0; i < messageList.size(); i++) {
                     String message = messageList.get(i);
                     String meterId = message.substring(4, 12);
-                    //判断收到的信息是否是输入框消火栓ID的信息
-                    //对连包进行处理
-                    switch (message.length()) {
-                        //长度42，开关阀门锁返回的信息
-                        case 42:
-                            if ("A4".equals(message.substring(18, 20))) {
-                                parserLockState(message);
-                            }
-                            break;
-                        //长度68，正在使用信息
-                        case 68:
-                            if ("A1".equals(message.substring(18, 20))) {
-                                parserCurrentUseState(message);
-                            }
-                            break;
-                        default:
-                            break;
+                    //判断收到的信息是否属于选中的消火栓
+                    if (meterId.equals(String.valueOf(mCurrentItem.getHydrantId()))) {
+                        //对连包进行处理
+                        switch (message.length()) {
+                            //长度42，开关阀门锁返回的信息
+                            case 42:
+                                if ("A4".equals(message.substring(18, 20))) {
+                                    parserLockState(message);
+                                }
+                                break;
+                            //长度68，正在使用信息
+                            case 68:
+                                if ("A1".equals(message.substring(18, 20))) {
+                                    parserCurrentUseState(message);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        if (popupPOIDetails.getVisibility() == View.VISIBLE) {
+                            llHydrantUsingStatus.setVisibility(View.VISIBLE);
+                        }
                     }
                 }
             } else {
@@ -520,15 +554,14 @@ public class MainActivity extends BaseActivity {
     private void parserLockState(String message) {
         //收到下位机发送的开关锁返回信息
         String meterId = message.substring(4, 12);
-//        refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "返回开关阀门锁状态数据原文：" + message + "\n");
-//        String device = AnalysisUtils.getOpenValveMethod(message.substring(26, 28));
-//        if (message.substring(36, 38).endsWith("00")) {
-//            refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门锁状态：开启，" + "开锁设备：" + device + "\n");
-//            refreshSocketText2(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门锁状态：开启，" + "开锁设备：" + device + "\n");
-//        } else if (message.substring(36, 38).endsWith("01")) {
-//            refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门锁状态：关闭" + "\n");
-//            refreshSocketText2(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门锁状态：关闭" + "\n");
-//        }
+        if (message.substring(36, 38).endsWith("00")) {
+            tvOpenTime.setText(TimeUtils.getCurrentTime());
+            tvUsingStatus.setText("开始使用");
+            showToast("消火栓" + meterId + "阀门锁开启");
+        } else if (message.substring(36, 38).endsWith("01")) {
+            tvUsingStatus.setText("结束使用");
+            showToast("消火栓" + meterId + "阀门锁关闭");
+        }
     }
 
     /**
@@ -548,45 +581,37 @@ public class MainActivity extends BaseActivity {
         BigDecimal bigDecimal = new BigDecimal((Double.valueOf(currentAmount) * AnalysisUtils.getFlowMultiple(currentAmountUnit)));
         //保留三位小数
         double waterConsumption = bigDecimal.setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue();
-//        if (lockDevice.equals("00")) {
-//            tvCurrentUserID.setText(getString(R.string.no_user));
+
+        String usingStatus = "";
+        switch (currentUseState) {
+            case "00":
+                usingStatus = "开始使用";
+                break;
+            case "01":
+                usingStatus = "正在用水";
+                break;
+            case "02":
+                usingStatus = "结束使用";
+                break;
+            default:
+                break;
+        }
+
+        tvUsingStatus.setText(usingStatus);
+        tvConsumption.setText(String.format(getString(R.string.exampleConsumption), String.valueOf(waterConsumption)));
+
+//        String alarm = message.substring(62, 64);
+//        int m = Integer.valueOf(alarm, 16);
+//        if ((m & 0x02) == 0x02) {
+//            tvAlarmNotCloseValve.setText("阀门未关紧");
+//            refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门未关紧，请关紧阀门" + "\n");
 //        } else {
-//            String text = null;
-//            tvOpenTime2.setText(currentTime);
-//            tvCurrentUserID.setText(currentUserID);
-//            tvCurrentAmount.setText(String.format(getString(R.string.exampleConsumption), String.valueOf(waterConsumption)));
-//            tvLockDevice.setText(AnalysisUtils.getOpenValveMethod(lockDevice));
-//            switch (currentUseState) {
-//                case "00":
-//                    tvCurrentUseState.setText("阀门锁开启");
-//                    text = "消火栓" + meterId + "阀门锁开启，消耗水量：";
-//                    break;
-//                case "01":
-//                    tvCurrentUseState.setText("正在用水");
-//                    text = "消火栓" + meterId + "正在使用中，消耗水量：";
-//                    break;
-//                case "02":
-//                    tvCurrentUseState.setText("结束使用");
-//                    text = "消火栓" + meterId + "结束使用，消耗水量：";
-//                    break;
-//                default:
-//                    break;
-//            }
-//            refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + text + waterConsumption + "m³" + "\n");
-//            refreshSocketText2(TimeUtils.getCurrentTimeWithSpace() + text + waterConsumption + "m³" + "\n");
-//            String alarm = message.substring(62, 64);
-//            int m = Integer.valueOf(alarm, 16);
-//            if ((m & 0x02) == 0x02) {
-//                tvAlarmNotCloseValve.setText("阀门未关紧");
-//                refreshSocketText(TimeUtils.getCurrentTimeWithSpace() + "消火栓" + meterId + "阀门未关紧，请关紧阀门" + "\n");
-//            } else {
-//                tvAlarmNotCloseValve.setText("阀门已关紧");
-//            }
-//            if ((m & 0x04) == 0x04) {
-//                tvAlarmLeakageWithoutUser.setText("漏水中");
-//            } else {
-//                tvAlarmLeakageWithoutUser.setText("未漏水");
-//            }
+//            tvAlarmNotCloseValve.setText("阀门已关紧");
+//        }
+//        if ((m & 0x04) == 0x04) {
+//            tvAlarmLeakageWithoutUser.setText("漏水中");
+//        } else {
+//            tvAlarmLeakageWithoutUser.setText("未漏水");
 //        }
     }
 
@@ -626,35 +651,64 @@ public class MainActivity extends BaseActivity {
     private View.OnClickListener onClickListener = (view) -> {
         ClientUser.Account account = HydrantApplication.getInstance().getAccount();
         switch (view.getId()) {
+            case R.id.ivSearch:
+                showToast("搜索功能暂未开放");
+                break;
+            case R.id.ivMessage:
+                showToast("消息功能暂未开放");
+                break;
             case R.id.btnBg:
-                btnBg.setVisibility(View.GONE);
-                popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_hide));
-                popupPOIDetails.setVisibility(View.GONE);
+                hidePoiDetails();
+                break;
+            case R.id.btnNavigation:
+                // 导航到消火栓
+                showToast("导航功能暂未开放");
+                break;
+            case R.id.btnOpen:
+                // 打开消火栓阀门锁
+                if (checkAccount()) {
+                    operateHydrant("开阀门锁", "0011112408901F" + loginId + "F000");
+                }
+                break;
+            case R.id.btnClose:
+                // 关闭消火栓阀门锁
+                if (checkAccount()) {
+                    operateHydrant("关阀门锁", "0011112408901F" + loginId + "0F00");
+                }
                 break;
             case R.id.iv_icon:
                 drawerLayout.openDrawer(GravityCompat.START);
                 break;
             case R.id.tv_allHydrant:
+                hidePoiDetails();
                 setMyClickable(tvAllHydrant);
                 break;
             case R.id.tv_fireHydrant:
+                hidePoiDetails();
                 setMyClickable(tvFireHydrant);
                 break;
             case R.id.tv_otherHydrant:
+                hidePoiDetails();
                 setMyClickable(tvOtherHydrant);
                 break;
             case R.id.dingwei:
+                hidePoiDetails();
                 shouldUseLocation = true;
-                Go2myLotionAndRefresh();
+                moveToPoint(mCurrentLocation);
                 break;
             case R.id.refreshAll:
+                hidePoiDetails();
                 shouldUseLocation = false;
-                refreshData();
+                if (checkAccount()) {
+                    refreshData();
+                }
                 break;
             case R.id.kefu:
-                openActivity(ContactUsActivity.class);
+                hidePoiDetails();
+                showToast("故障上报功能暂未开放");
                 break;
             case R.id.scan_qrcode:
+                hidePoiDetails();
                 Go2LoginOrScan();
                 break;
             case R.id.ll_login:
@@ -680,6 +734,12 @@ public class MainActivity extends BaseActivity {
             case R.id.ll_bindAccounts:
                 openActivity(SocialAccountsActivity.class);
                 break;
+            case R.id.llMapZoomLevel:
+                startActivityForResult(new Intent(this, MapZoomLevelActivity.class), REQUEST_CODE_ZOOM);
+                break;
+            case R.id.llNavigationApp:
+                showToast("导航功能暂未开放");
+                break;
             case R.id.ll_update:
                 if (account == null) {
                     showToast("请登陆后检查版本更新");
@@ -700,7 +760,7 @@ public class MainActivity extends BaseActivity {
                 openActivity(VersionsActivity.class);
                 break;
             case R.id.ll_share:
-//                showShare();
+                showToast("分享功能暂未开放");
                 break;
             case R.id.btn_exit:
                 SharedPreferencesUtils.getInstance().clearData("passWord_main");
@@ -727,8 +787,8 @@ public class MainActivity extends BaseActivity {
         mBaiduMap = mMapView.getMap();
         mBaiduMap.setMyLocationEnabled(true);
         // 隐藏比例尺控件
-        //  mMapView.showScaleControl(false);
-        //隐藏缩放按钮
+        mMapView.showScaleControl(false);
+        // 隐藏缩放按钮
         mMapView.showZoomControls(false);
 
         mCurrentMode = MyLocationConfiguration.LocationMode.FOLLOWING;
@@ -772,9 +832,9 @@ public class MainActivity extends BaseActivity {
      * 地理编码的初始化相关
      */
     private void initGeoCoder() {
-        // 初始化：创建出一个地理编码查询的对象
-        GeoCoder mGeoCoder = GeoCoder.newInstance();
-        // 设置查询结果的监听:地理编码的监听
+        if (mGeoCoder == null) {
+            mGeoCoder = GeoCoder.newInstance();
+        }
         mGeoCoder.setOnGetGeoCodeResultListener(mGeoCoderResultListener);
     }
 
@@ -785,20 +845,13 @@ public class MainActivity extends BaseActivity {
         // 得到地理编码的结果：地址-->经纬度
         @Override
         public void onGetGeoCodeResult(GeoCodeResult geoCodeResult) {
+
         }
 
         // 得到反向地理编码的结果：经纬度-->地址
         @Override
         public void onGetReverseGeoCodeResult(ReverseGeoCodeResult reverseGeoCodeResult) {
-            // 当前是拿到结果以后给标题录入的卡片上面的文本设置上
-//            if (reverseGeoCodeResult == null) {
-//                mCurrentAddr = "未知的位置";
-//                return;
-//            }
-            // 拿到反地理编码得到的地址信息
-//            mCurrentAddr = reverseGeoCodeResult.getAddress();
-            // 将地址信息给TextView设置上
-//            mTvCurrentLocation.setText(mCurrentAddr);
+            tvHydrantAddress.setText(reverseGeoCodeResult.getAddress());
         }
     };
 
@@ -812,13 +865,6 @@ public class MainActivity extends BaseActivity {
                 return;
             }
             mBDLocation = bdLocation;
-            MyLocationData locData = new MyLocationData.Builder()
-                    .accuracy(0f)
-                    //设定图标方向，此处设置开发者获取到的方向信息，顺时针0-360
-                    .direction(mCurrentX)
-                    .latitude(bdLocation.getLatitude())
-                    .longitude(bdLocation.getLongitude()).build();
-            mBaiduMap.setMyLocationData(locData);
             currentLatitude = bdLocation.getLatitude();
             currentLongitude = bdLocation.getLongitude();
             mCurrentLocation = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
@@ -827,12 +873,22 @@ public class MainActivity extends BaseActivity {
             startNodeStr = PlanNode.withLocation(mCurrentLocation);
             if (isFirstLocation) {
                 isFirstLocation = false;
-                moveToPoint(mCurrentLocation);
-                changeLatitude = bdLocation.getLatitude();
-                changeLongitude = bdLocation.getLongitude();
-                if (!isServiceLive) {
-//                    addOverLayout(currentLatitude, currentLongitude);
-                }
+                MyLocationData locData = new MyLocationData.Builder()
+                        .accuracy(0f)
+                        //设定图标方向，此处设置开发者获取到的方向信息，顺时针0-360
+                        .direction(mCurrentX)
+                        .latitude(currentLatitude)
+                        .longitude(currentLongitude).build();
+                mBaiduMap.setMyLocationData(locData);
+            }
+            if (shouldUseLocation) {
+                MyLocationData locData = new MyLocationData.Builder()
+                        .accuracy(0f)
+                        //设定图标方向，此处设置开发者获取到的方向信息，顺时针0-360
+                        .direction(mCurrentX)
+                        .latitude(currentLatitude)
+                        .longitude(currentLongitude).build();
+                mBaiduMap.setMyLocationData(locData);
             }
         }
     };
@@ -842,6 +898,13 @@ public class MainActivity extends BaseActivity {
         mClusterManager = new ClusterManager<>(this, mBaiduMap);
         // 设置地图监听，当地图状态发生改变时，进行点聚合运算
         mBaiduMap.setOnMapStatusChangeListener(mClusterManager);
+
+        mBaiduMap.setOnMapTouchListener(new BaiduMap.OnMapTouchListener() {
+            @Override
+            public void onTouch(MotionEvent motionEvent) {
+                shouldUseLocation = false;
+            }
+        });
         // 设置maker点击时的响应
         mBaiduMap.setOnMarkerClickListener(mClusterManager);
 
@@ -851,50 +914,62 @@ public class MainActivity extends BaseActivity {
         });
         mClusterManager.setOnClusterItemClickListener((item) -> {
             mCurrentItem = item;
-
-            double distance;
-            // 表信息的取出和展示
-            String hydrantType = mCurrentItem.getHydrantType();
-            String hydrantAddress = mCurrentItem.getHydrantAddress();
-            String commitTime = mCurrentItem.getCreateTime();
-            int hydrantID = mCurrentItem.getHydrantId();
-            LatLng latLng = mCurrentItem.getPosition();
-            // 使用百度地图里面的计算的工具类计算出来的距离
-            if (mCurrentLocation == null) {
-                distance = 0;
-            } else {
-                distance = DistanceUtil.getDistance(latLng, mCurrentLocation);
-            }
-            // 规范显示的样式
-            String text;
-            int oneThousand = 1000;
-            if (distance > oneThousand) {
-                //保留三位小数
-                DecimalFormat decimalFormat = new DecimalFormat("#0.000");
-                text = decimalFormat.format(distance / 1000) + "km";
-            } else {
-                //取整
-                DecimalFormat decimalFormat = new DecimalFormat("#");
-                text = decimalFormat.format(distance) + "m";
-            }
-//            tvHydrantID.setText(String.valueOf(hydrantID));
-//            tvHydrantType.setText(hydrantType);
-//            tvDistance.setText(text);
-//            tvCommitTime.setText(commitTime);
-//            informationHydrant.setVisibility(View.VISIBLE);
-//            hydrantLocation = latLng;
-//            hydrantLocationAddress = hydrantAddress;
-            moveToPoint(latLng);
-            btnBg.setVisibility(View.VISIBLE);
-            popupPOIDetails.setVisibility(View.VISIBLE);
-            popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_show));
+            llHydrantUsingStatus.setVisibility(View.GONE);
+            showPoiDetails();
             return false;
         });
     }
 
-    private void Go2myLotionAndRefresh() {
-        moveToPoint(mCurrentLocation);
-        refreshData();
+    private void showPoiDetails() {
+        shouldUseLocation = false;
+
+        double distance;
+        LatLng latLng = mCurrentItem.getPosition();
+        // 使用百度地图里面的计算的工具类计算出来的距离
+        if (mCurrentLocation == null) {
+            distance = 0;
+        } else {
+            distance = DistanceUtil.getDistance(latLng, mCurrentLocation);
+        }
+        // 规范显示的样式
+        String distanceText;
+        int oneThousand = 1000;
+        if (distance > oneThousand) {
+            //保留三位小数
+            DecimalFormat decimalFormat = new DecimalFormat("#0.000");
+            distanceText = decimalFormat.format(distance / 1000) + "km";
+        } else {
+            //取整
+            DecimalFormat decimalFormat = new DecimalFormat("#");
+            distanceText = decimalFormat.format(distance) + "m";
+        }
+
+        tvHydrantType.setText(mCurrentItem.getHydrantType());
+        tvHydrantId.setText(String.valueOf(mCurrentItem.getHydrantId()));
+        tvHydrantStatus.setText(mCurrentItem.getHydrantStatus());
+        tvHydrantDistance.setText(distanceText);
+        // 如果手动录入过消火栓地址，则采用手动录入的，否则采用地理编码反解坐标得到地址
+        if (TextUtils.isEmpty(mCurrentItem.getHydrantAddress().trim())) {
+            mGeoCoder.reverseGeoCode(new ReverseGeoCodeOption().location(mCurrentItem.getPosition()));
+        } else {
+            tvHydrantAddress.setText(mCurrentItem.getHydrantAddress());
+        }
+
+        if (popupPOIDetails.getVisibility() == View.GONE) {
+            btnBg.setVisibility(View.VISIBLE);
+            popupPOIDetails.setVisibility(View.VISIBLE);
+            popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_show));
+        }
+
+        moveToPoint(latLng);
+    }
+
+    private void hidePoiDetails() {
+        if (popupPOIDetails.getVisibility() == View.VISIBLE) {
+            btnBg.setVisibility(View.GONE);
+            popupPOIDetails.setAnimation(AnimationUtils.loadAnimation(MainActivity.this, R.anim.anim_top_hide));
+            popupPOIDetails.setVisibility(View.GONE);
+        }
     }
 
     private void refreshData() {
@@ -902,18 +977,58 @@ public class MainActivity extends BaseActivity {
         initAllHydrant();
     }
 
+    private boolean checkAccount() {
+        if (!HydrantApplication.loginSuccess) {
+            openActivity(LoginRegisterActivity.class);
+            return false;
+        }
+        if (!hydrantAccountCorrect) {
+            showToast("请检查消火栓账号");
+            return false;
+        }
+        if (isAdminAccount) {
+            showToast("请勿使用管理员账号");
+            return false;
+        }
+        if (!mapLoadedFinish) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 请求得到所有的消火栓
      */
     private void initAllHydrant() {
-        if (!HydrantApplication.loginSuccess || !mapLoadedFinish || !hydrantAccountCorrect) {
+        if (!HydrantApplication.loginSuccess) {
             return;
         }
+        if (!hydrantAccountCorrect) {
+            return;
+        }
+        if (isAdminAccount) {
+            if (mapLoadedFinish) {
+                Intent intent = new Intent(MainActivity.this, ChooseCompanyActivity.class);
+                intent.putExtra(getString(R.string.waterCompanyName), GsonUtils.convertJSON(loginResult));
+                startActivityForResult(intent, REQUEST_CODE_CHOOSE_COMPANY);
+            }
+            return;
+        }
+        if (!mapLoadedFinish) {
+            return;
+        }
+
+        hydrantClusterItemList.clear();
+        hidePoiDetails();
+        shouldUseLocation = false;
+        mClusterManager.clearItems();
+        mBaiduMap.clear();
+        initMapView();
+
         ClientUser.Account account = HydrantApplication.getInstance().getAccount();
         serverHost = account.getServer_Host_CS();
         httpPort = account.getHttp_Port_CS();
         serviceName = account.getService_Name_CS();
-        hieId = (String) SharedPreferencesUtils.getInstance().getData("hie_id", "");
         HashMap<String, String> params = new HashMap<>(2);
         params.put("hieId", hieId);
         params.put("meterid", "");
@@ -974,7 +1089,21 @@ public class MainActivity extends BaseActivity {
                                 }
                                 String createTime = hydrant.getCreate_time();
                                 String hydrantAddress = hydrant.getAddress();
-                                hydrantClusterItemList.add(new HydrantClusterItem(latLng, hydrantId, hydrantType, createTime, hydrantAddress));
+                                StringBuilder hydrantStatus = new StringBuilder();
+                                if (hydrant.getMeter_status().contains("无水")) {
+                                    hydrantStatus.append("无水");
+                                }
+                                if ("00".equals(hydrant.getRemark3()) || "01".equals(hydrant.getRemark3())) {
+                                    if (TextUtils.isEmpty(hydrantStatus.toString())) {
+                                        hydrantStatus.append("，");
+                                    }
+                                    hydrantStatus.append("有人使用");
+                                }
+                                if (TextUtils.isEmpty(hydrantStatus.toString())) {
+                                    hydrantStatus.append("状态正常");
+                                }
+                                boolean online = hydrant.isOnline();
+                                hydrantClusterItemList.add(new HydrantClusterItem(latLng, hydrantId, hydrantType, createTime, hydrantStatus.toString(), hydrantAddress, online));
                             }
                         }
                         addMarkers(hydrantClusterItemList);
@@ -1007,9 +1136,7 @@ public class MainActivity extends BaseActivity {
             mClusterManager.addItems(hydrantClusterItemList);
             centerPoint = new LatLng(latitude / hydrantClusterItemList.size(), longitude / hydrantClusterItemList.size());
         }
-        if (!shouldUseLocation) {
-            moveToPoint(centerPoint);
-        }
+        moveToPoint(centerPoint);
     }
 
     /**
@@ -1023,7 +1150,7 @@ public class MainActivity extends BaseActivity {
                 .target(latLng)
                 .rotate(0)
                 .overlook(0)
-                .zoom(18)
+                .zoom((int) SharedPreferencesUtils.getInstance().getData("ZoomLevel", 15))
                 .build();
         // 更新状态
         MapStatusUpdate update = MapStatusUpdateFactory.newMapStatus(mapStatus);
@@ -1226,22 +1353,30 @@ public class MainActivity extends BaseActivity {
                 } else {
                     String result = waterMeterLoginResult.getResult();
                     if (result.equals(Constants.SUCCESS)) {
+                        Intent intent;
                         switch (waterMeterLoginResult.getPrivilege()) {
                             case "管理员":
-                                showToast("请勿使用管理员账号！");
+                                isAdminAccount = true;
+                                loginResult = waterMeterLoginResult;
+                                if (mapLoadedFinish) {
+                                    intent = new Intent(MainActivity.this, ChooseCompanyActivity.class);
+                                    intent.putExtra(getString(R.string.waterCompanyName), GsonUtils.convertJSON(loginResult));
+                                    startActivityForResult(intent, REQUEST_CODE_CHOOSE_COMPANY);
+                                }
                                 break;
                             case "普通":
                                 //对象中拿到集合
                                 WaterMeterLoginResult.Data data = waterMeterLoginResult.getData().get(0);
                                 //消火栓信息
-                                SharedPreferencesUtils.getInstance().saveData("loginId", data.getLogin_id());
-                                SharedPreferencesUtils.getInstance().saveData("hie_id", data.getHie_id());
+                                loginId = data.getLogin_id();
+                                hieId = data.getHie_id();
                                 hydrantAccountCorrect = true;
+                                isAdminAccount = false;
                                 initAllHydrant();
                                 String socketPort = HydrantApplication.getInstance().getAccount().getSocket_Port_CS();
                                 String loginId = (String) SharedPreferencesUtils.getInstance().getData("loginId", "");
                                 //启动service
-                                Intent intent = new Intent(mContext, SocketService.class);
+                                intent = new Intent(mContext, SocketService.class);
                                 intent.putExtra("ip", serverHost);
                                 intent.putExtra("port", socketPort);
                                 intent.putExtra("loginId", loginId);
@@ -1252,11 +1387,45 @@ public class MainActivity extends BaseActivity {
                                 break;
                         }
                     } else {
+                        isAdminAccount = false;
                         showToast(waterMeterLoginResult.getMsg());
                     }
                 }
             }
         });
+    }
+
+    /**
+     * 发送控制消火栓指令的公共方法
+     *
+     * @param operateType 指令中文说明（用于打印在文本框）
+     * @param command     指令具体内容
+     */
+    private void operateHydrant(String operateType, String command) {
+        String meterId = String.valueOf(mCurrentItem.getHydrantId());
+        //用于计算校验码
+        String number = "6859" + meterId + command;
+        //校验码
+        String checkCode = AnalysisUtils.getCSSum(number, 0);
+        String tx = number + checkCode + "16";
+        LogUtils.d(SocketService.TAG, "发送的指令为：" + tx);
+
+        SocketPackage socketPackage = new SocketPackage();
+        socketPackage.setUserId(loginId);
+        socketPackage.setDeviceType(ProductType.HYDRANT_INT);
+        socketPackage.setSingleOpt(1);
+        socketPackage.setMeterId(meterId);
+        socketPackage.setUseCmdCode(false);
+        socketPackage.setCmdContent(tx);
+        if (isConnectSuccess) {
+            Runnable runnable = () -> {
+                socketService.sendMsg(NetWork.ANDROID_CMD + GsonUtils.convertJSON(socketPackage) + NetWork.ANDROID_END);
+            };
+            executorService.submit(runnable);
+            showToast(operateType + "指令已发送");
+        } else {
+            showToast("通信服务未建立，发送失败");
+        }
     }
 
     /**
@@ -1494,14 +1663,14 @@ public class MainActivity extends BaseActivity {
                     for (int result : grantResults) {
                         if (result == PackageManager.PERMISSION_DENIED) {
                             showToast("请同意所申请权限");
-                            finish();
+                            ActivityController.finishActivity(this);
                             return;
                         }
                     }
                     //      requestionLotion();
                 } else {
-                    showToast("Something Happened");
-                    finish();
+                    showToast("程序异常");
+                    ActivityController.finishActivity(this);
                 }
                 break;
             default:
@@ -1512,6 +1681,21 @@ public class MainActivity extends BaseActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
+            case REQUEST_CODE_CHOOSE_COMPANY:
+                if (RESULT_OK == resultCode) {
+                    hieId = data.getStringExtra("hieId");
+                    loginId = data.getStringExtra("loginId");
+                    Intent intent = new Intent(mContext, SocketService.class);
+                    intent.putExtra("ip", serverHost);
+                    String socketPort = HydrantApplication.getInstance().getAccount().getSocket_Port_CS();
+                    intent.putExtra("port", socketPort);
+                    intent.putExtra("loginId", loginId);
+                    startService(intent);
+                    isAdminAccount = false;
+                    hydrantAccountCorrect = true;
+                    initAllHydrant();
+                }
+                break;
             case REQUEST_CODE_NOTIFICATION_SETTINGS:
                 if (NotificationsUtils.isNotificationEnabled(mContext)) {
                     //通知权限已打开
@@ -1523,18 +1707,26 @@ public class MainActivity extends BaseActivity {
                 break;
             case REQUEST_CODE_UNLOCK:
                 if (RESULT_OK == resultCode) {
-                    String hydrantId = data.getStringExtra("result");
+                    String hydrantId = data.getStringExtra("HydrantId");
                     boolean hasHydrant = false;
                     for (HydrantClusterItem hydrantClusterItem : hydrantClusterItemList) {
                         if (String.valueOf(hydrantClusterItem.getHydrantId()).equals(hydrantId)) {
-                            moveToPoint(hydrantClusterItem.getPosition());
+                            mCurrentItem = hydrantClusterItem;
+                            showPoiDetails();
                             hasHydrant = true;
                             break;
                         }
                     }
                     if (!hasHydrant) {
+                        LogUtils.d("没有找到该消火栓");
                         showToast("没有找到该消火栓");
                     }
+                }
+                break;
+            case REQUEST_CODE_ZOOM:
+                if (RESULT_OK == resultCode && mBaiduMap.getMapStatus().zoom != (int) SharedPreferencesUtils.getInstance().getData("ZoomLevel", 15)) {
+                    // 中心不变，地图缩放
+                    moveToPoint(mBaiduMap.getMapStatus().target);
                 }
                 break;
             default:
@@ -1571,6 +1763,7 @@ public class MainActivity extends BaseActivity {
         }
         executorService.shutdown();
         mMapView.onDestroy();
+        mGeoCoder.destroy();
         locationService.unregisterListener(bdAbstractLocationListener);
         if (loginReceiver != null) {
             try {

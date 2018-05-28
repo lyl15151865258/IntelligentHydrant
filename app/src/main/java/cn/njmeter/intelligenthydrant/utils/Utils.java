@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import cn.njmeter.intelligenthydrant.R;
-import cn.njmeter.intelligenthydrant.widget.SelectDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.SelectDialog;
 
 
 public class Utils {

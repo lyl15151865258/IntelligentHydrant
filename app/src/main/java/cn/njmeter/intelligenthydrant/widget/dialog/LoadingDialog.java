@@ -1,4 +1,4 @@
-package cn.njmeter.intelligenthydrant.widget;
+package cn.njmeter.intelligenthydrant.widget.dialog;
 
 import android.content.Context;
 import android.os.Bundle;

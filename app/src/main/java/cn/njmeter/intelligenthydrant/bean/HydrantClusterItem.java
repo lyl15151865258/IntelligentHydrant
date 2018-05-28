@@ -21,14 +21,18 @@ public class HydrantClusterItem implements ClusterItem {
     private final int hydrantId;
     private final String hydrantType;
     private final String createTime;
+    private final String hydrantStatus;
     private final String hydrantAddress;
+    private final boolean online;
 
-    public HydrantClusterItem(LatLng latLng, int hydrantId, String hydrantType, String createTime, String hydrantAddress) {
+    public HydrantClusterItem(LatLng latLng, int hydrantId, String hydrantType, String createTime, String hydrantStatus, String hydrantAddress, boolean online) {
         mPosition = latLng;
         this.hydrantId = hydrantId;
         this.hydrantType = hydrantType;
         this.createTime = createTime;
+        this.hydrantStatus = hydrantStatus;
         this.hydrantAddress = hydrantAddress;
+        this.online = online;
     }
 
     @Override
@@ -48,13 +52,25 @@ public class HydrantClusterItem implements ClusterItem {
         return createTime;
     }
 
+    public String getHydrantStatus() {
+        return hydrantStatus;
+    }
+
     public String getHydrantAddress() {
         return hydrantAddress;
     }
 
     @Override
     public BitmapDescriptor getBitmapDescriptor() {
-        return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_online);
+        if (online) {
+            if (hydrantStatus.equals("状态正常")) {
+                return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_online);
+            } else {
+                return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_abnormal);
+            }
+        } else {
+            return BitmapDescriptorFactory.fromResource(R.mipmap.icon_hydrant_offline);
+        }
     }
 
 }

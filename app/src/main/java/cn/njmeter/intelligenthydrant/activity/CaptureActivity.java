@@ -27,7 +27,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
@@ -53,9 +52,9 @@ import cn.njmeter.intelligenthydrant.widget.MyToolbar;
  */
 public class CaptureActivity extends BaseActivity implements Callback {
 
-    private static final int REQUEST_PERMISSION_CAMERA = 1000;
-    private static final int REQUEST_PERMISSION_PHOTO = 1001;
-    private static final int REQUEST_HYDRANT_NUMBER = 22;
+    private static final int REQUEST_PERMISSION_CAMERA = 2000;
+    private static final int REQUEST_PERMISSION_PHOTO = 2001;
+    private static final int REQUEST_HYDRANT_NUMBER = 2002;
 
     private CaptureActivity mActivity;
 
@@ -167,14 +166,14 @@ public class CaptureActivity extends BaseActivity implements Callback {
                                     .show();
                         }
                     } else {
-                        Toast.makeText(mActivity, "图片路径未找到", Toast.LENGTH_SHORT).show();
+                        showToast("图片路径未找到");
                     }
                 }
                 break;
             case REQUEST_HYDRANT_NUMBER:
                 if (RESULT_OK == resultCode) {
                     Intent intent = new Intent();
-                    intent.putExtra("result", data.getStringExtra("result"));
+                    intent.putExtra("HydrantId", data.getStringExtra("HydrantId"));
                     setResult(RESULT_OK, intent);
                     ActivityController.finishActivity(this);
                 }
@@ -230,13 +229,13 @@ public class CaptureActivity extends BaseActivity implements Callback {
 
     protected void handleResult(String resultString) {
         if (resultString.equals("")) {
-            Toast.makeText(CaptureActivity.this, R.string.scan_failed, Toast.LENGTH_SHORT).show();
+            showToast(R.string.scan_failed);
         } else {
             Intent resultIntent = new Intent();
             Bundle bundle = new Bundle();
-            bundle.putString("result", resultString);
+            bundle.putString("HydrantId", resultString);
             resultIntent.putExtras(bundle);
-            this.setResult(RESULT_OK, resultIntent);
+            setResult(RESULT_OK, resultIntent);
         }
         ActivityController.finishActivity(mActivity);
     }

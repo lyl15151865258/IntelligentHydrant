@@ -12,8 +12,8 @@ android {
         applicationId "cn.njmeter.intelligenthydrant"
         minSdkVersion 17
         targetSdkVersion 27
-        versionCode 20180525
-        versionName "1.0.1"
+        versionCode 20180528
+        versionName "1.0.2"
         flavorDimensions "versionCode"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

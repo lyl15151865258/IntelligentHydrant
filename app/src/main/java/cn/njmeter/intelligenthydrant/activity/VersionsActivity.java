@@ -46,7 +46,7 @@ import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.widget.DownloadProgressBar;
 import cn.njmeter.intelligenthydrant.widget.MyToolbar;
 import cn.njmeter.intelligenthydrant.widget.RecyclerViewDivider;
-import cn.njmeter.intelligenthydrant.widget.DownLoadDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.DownLoadDialog;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;

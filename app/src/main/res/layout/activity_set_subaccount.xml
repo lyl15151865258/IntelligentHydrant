@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:gravity="center"
-                    android:text="@string/SmartWaterSupply"
+                    android:text="请填写服务器和账号信息"
                     android:textColor="@color/white"
                     android:textSize="@dimen/sp_20" />
 

@@ -62,7 +62,7 @@ public class SetSubAccountActivity extends BaseActivity {
 
     private void initView() {
         MyToolbar toolbar = findViewById(R.id.main_toolbar);
-        toolbar.initToolBar(this, toolbar, getString(R.string.SubAccount), R.drawable.back_white, R.drawable.save_selector, onClickListener);
+        toolbar.initToolBar(this, toolbar, getString(R.string.HydrantAccount), R.drawable.back_white, R.drawable.save_selector, onClickListener);
         //限制域名（或服务器IP地址）输入框的输入内容
         String digits = "abcdefghijklmnopqrstuvwxyz0123456789.";
 

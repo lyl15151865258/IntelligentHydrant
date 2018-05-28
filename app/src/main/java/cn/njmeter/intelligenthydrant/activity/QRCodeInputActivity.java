@@ -120,7 +120,7 @@ public class QRCodeInputActivity extends BaseActivity {
             return;
         }
         Intent intent = new Intent();
-        intent.putExtra("result", mPasswordView.getPassWord());
+        intent.putExtra("HydrantId", mPasswordView.getPassWord());
         setResult(RESULT_OK, intent);
         ActivityController.finishActivity(QRCodeInputActivity.this);
     }

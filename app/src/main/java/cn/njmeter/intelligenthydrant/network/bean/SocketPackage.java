@@ -6,6 +6,10 @@ public class SocketPackage {
      */
     private String userId;
     /**
+     * 操作的设备类型
+     */
+    private int deviceType;
+    /**
      * 是否是单表操作（true：单表操作    false：批量操作）
      */
     private int singleOpt;
@@ -44,6 +48,14 @@ public class SocketPackage {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public int getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(int deviceType) {
+        this.deviceType = deviceType;
     }
 
     public int getSingleOpt() {

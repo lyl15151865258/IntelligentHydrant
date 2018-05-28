@@ -72,6 +72,7 @@ public class HydrantLastData {
         private String usingCreate_time;
         private String abnormalCreate_time;
         private int product_use_code;
+        private boolean online;
 
         public String getMeter_id() {
             return meter_id;
@@ -311,6 +312,14 @@ public class HydrantLastData {
 
         public void setProduct_use_code(int product_use_code) {
             this.product_use_code = product_use_code;
+        }
+
+        public boolean isOnline() {
+            return online;
+        }
+
+        public void setOnline(boolean online) {
+            this.online = online;
         }
     }
 

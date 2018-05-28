@@ -34,7 +34,7 @@ import cn.njmeter.intelligenthydrant.utils.LanguageUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
 import cn.njmeter.intelligenthydrant.utils.ScreenTools;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
-import cn.njmeter.intelligenthydrant.widget.LoadingDialog;
+import cn.njmeter.intelligenthydrant.widget.dialog.LoadingDialog;
 
 /**
  * 父类activity
@@ -279,25 +279,16 @@ public abstract class BaseActivity extends AppCompatActivity {
      * @param msg 需要显示的文本
      */
     public void showToast(String msg) {
+        //如果APP在前台显示就弹窗，否则不显示弹窗（主要是监听网络变化的toast）
+        View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
+        TextView tvMessage = view.findViewById(R.id.tv_toast_text);
+        tvMessage.setText(msg);
         if (toast == null) {
             toast = new Toast(this);
-            //获取自定义视图
-            View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
-            TextView tvMessage = view.findViewById(R.id.tv_toast_text);
-            //设置文本
-            tvMessage.setText(msg);
-            //设置视图
             toast.setView(view);
-            //设置显示时长
             toast.setDuration(Toast.LENGTH_SHORT);
         } else {
-            View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
-            TextView tvMessage = view.findViewById(R.id.tv_toast_text);
-            //设置文本
-            tvMessage.setText(msg);
-            //设置视图
             toast.setView(view);
-            //设置显示时长
             toast.setDuration(Toast.LENGTH_SHORT);
         }
         toast.show();
