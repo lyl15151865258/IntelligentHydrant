@@ -39,8 +39,8 @@
 
             <cn.njmeter.intelligenthydrant.qrcode.zxing.view.ViewfinderView
                 android:id="@+id/viewfinder_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_centerHorizontal="true"
                 app:qr_angleColor="@color/white"
                 app:qr_errorHint="请允许访问摄像头后重试"

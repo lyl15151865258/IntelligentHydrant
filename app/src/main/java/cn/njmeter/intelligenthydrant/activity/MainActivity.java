@@ -987,7 +987,9 @@ public class MainActivity extends BaseActivity {
             return false;
         }
         if (isAdminAccount) {
-            showToast("请勿使用管理员账号");
+            Intent intent = new Intent(MainActivity.this, ChooseCompanyActivity.class);
+            intent.putExtra(getString(R.string.waterCompanyName), GsonUtils.convertJSON(loginResult));
+            startActivityForResult(intent, REQUEST_CODE_CHOOSE_COMPANY);
             return false;
         }
         if (!mapLoadedFinish) {
@@ -1354,6 +1356,7 @@ public class MainActivity extends BaseActivity {
                     String result = waterMeterLoginResult.getResult();
                     if (result.equals(Constants.SUCCESS)) {
                         Intent intent;
+                        hydrantAccountCorrect = true;
                         switch (waterMeterLoginResult.getPrivilege()) {
                             case "管理员":
                                 isAdminAccount = true;
@@ -1370,7 +1373,6 @@ public class MainActivity extends BaseActivity {
                                 //消火栓信息
                                 loginId = data.getLogin_id();
                                 hieId = data.getHie_id();
-                                hydrantAccountCorrect = true;
                                 isAdminAccount = false;
                                 initAllHydrant();
                                 String socketPort = HydrantApplication.getInstance().getAccount().getSocket_Port_CS();

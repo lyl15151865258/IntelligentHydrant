@@ -6,9 +6,6 @@
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/dp_5"
     android:background="@drawable/shape_corner_bg_with_line_5"
-    android:clickable="true"
-    android:fitsSystemWindows="true"
-    android:focusable="true"
     android:orientation="vertical"
     android:visibility="gone">
 
@@ -139,13 +136,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="开锁时间："
-            android:textSize="@dimen/sp_14" />
+            android:textSize="@dimen/sp_12" />
 
         <TextView
             android:id="@+id/tvOpenTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/sp_14" />
+            android:textSize="@dimen/sp_12" />
 
         <View
             android:layout_width="0dp"
@@ -156,13 +153,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="当前用水："
-            android:textSize="@dimen/sp_14" />
+            android:textSize="@dimen/sp_12" />
 
         <TextView
             android:id="@+id/tvConsumption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/sp_14" />
+            android:textSize="@dimen/sp_12" />
 
         <View
             android:layout_width="0dp"
@@ -173,7 +170,7 @@
             android:id="@+id/tvUsingStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/sp_14" />
+            android:textSize="@dimen/sp_12" />
 
     </LinearLayout>
 
