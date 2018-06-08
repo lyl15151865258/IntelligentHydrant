@@ -113,7 +113,6 @@ import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.utils.StringUtils;
 import cn.njmeter.intelligenthydrant.utils.TimeUtils;
 import cn.njmeter.intelligenthydrant.utils.clusterutil.clustering.ClusterManager;
-import cn.njmeter.intelligenthydrant.widget.dialog.CommonWarningDialog;
 import cn.njmeter.intelligenthydrant.widget.dialog.DownLoadDialog;
 import cn.njmeter.intelligenthydrant.widget.DownloadProgressBar;
 import cn.njmeter.intelligenthydrant.widget.dialog.ReDownloadWarningDialog;
@@ -131,7 +130,8 @@ public class MainActivity extends BaseActivity {
     private Context mContext;
     private String serverHost, httpPort, serviceName, hieId, loginId;
     private DrawerLayout drawerLayout;
-    private LinearLayout llMain, popupPOIDetails, llHydrantUsingStatus;
+    private NavigationView navigation;
+    private LinearLayout llNotification, llMain, popupPOIDetails, llHydrantUsingStatus;
     private TextView tvAllHydrant, tvFireHydrant, tvOtherHydrant;
     private TextView tvHydrantType, tvHydrantId, tvHydrantStatus, tvHydrantDistance, tvHydrantAddress;
     private ImageView mDingWei, mRefresh, mKefu;
@@ -223,28 +223,6 @@ public class MainActivity extends BaseActivity {
         requestPermission();
         login();
 
-        if (!NotificationsUtils.isNotificationEnabled(mContext)) {
-            CommonWarningDialog commonWarningDialog = new CommonWarningDialog(mContext, getString(R.string.notification_open_notification));
-            commonWarningDialog.setCancelable(false);
-            commonWarningDialog.setOnDialogClickListener(new CommonWarningDialog.OnDialogClickListener() {
-                @Override
-                public void onOKClick() {
-                    // 根据isOpened结果，判断是否需要提醒用户跳转AppInfo页面，去打开App通知权限
-                    Intent intent = new Intent();
-                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    Uri uri = Uri.fromParts("package", mContext.getPackageName(), null);
-                    intent.setData(uri);
-                    startActivityForResult(intent, REQUEST_CODE_NOTIFICATION_SETTINGS);
-                }
-
-                @Override
-                public void onCancelClick() {
-                    showToast("未授予通知权限，部分功能不可使用");
-                }
-            });
-            commonWarningDialog.show();
-        }
-
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
@@ -293,6 +271,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        showOrHideNotification();
         initPage();
         mMapView.onResume();
         locationService.start();
@@ -322,10 +301,14 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initView() {
-        NavigationView navigation = findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
         ViewGroup.LayoutParams params = navigation.getLayoutParams();
         params.width = mWidth * 4 / 5;
         navigation.setLayoutParams(params);
+
+        llNotification = findViewById(R.id.ll_notification);
+        llNotification.setOnClickListener(onClickListener);
+        showOrHideNotification();
 
         drawerLayout = findViewById(R.id.drawer_layout);
         llMain = findViewById(R.id.ll_main);
@@ -392,28 +375,30 @@ public class MainActivity extends BaseActivity {
         tvConsumption = findViewById(R.id.tvConsumption);
         tvUsingStatus = findViewById(R.id.tvUsingStatus);
 
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-                llMain.scrollTo(-(int) (navigation.getWidth() * slideOffset), 0);
-            }
-
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
+        drawerLayout.addDrawerListener(drawerListener);
     }
+
+    private DrawerLayout.DrawerListener drawerListener = new DrawerLayout.DrawerListener() {
+        @Override
+        public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+            llMain.scrollTo(-(int) (navigation.getWidth() * slideOffset), 0);
+        }
+
+        @Override
+        public void onDrawerOpened(@NonNull View drawerView) {
+
+        }
+
+        @Override
+        public void onDrawerClosed(@NonNull View drawerView) {
+
+        }
+
+        @Override
+        public void onDrawerStateChanged(int newState) {
+
+        }
+    };
 
     /**
      * 收到EventBus发来的消息并处理
@@ -651,6 +636,14 @@ public class MainActivity extends BaseActivity {
     private View.OnClickListener onClickListener = (view) -> {
         ClientUser.Account account = HydrantApplication.getInstance().getAccount();
         switch (view.getId()) {
+            case R.id.ll_notification:
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                startActivity(intent);
+                break;
             case R.id.ivSearch:
                 showToast("搜索功能暂未开放");
                 break;
@@ -774,6 +767,17 @@ public class MainActivity extends BaseActivity {
                 break;
         }
     };
+
+    /**
+     * 显示或隐藏“打开悬浮窗”的提示
+     */
+    public void showOrHideNotification() {
+        if (NotificationsUtils.isNotificationEnabled(this)) {
+            llNotification.setVisibility(View.GONE);
+        } else {
+            llNotification.setVisibility(View.VISIBLE);
+        }
+    }
 
     private void initMapView() {
         mapStatus = new MapStatus.Builder()

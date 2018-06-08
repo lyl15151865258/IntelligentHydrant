@@ -100,7 +100,6 @@ public class LoginRegisterActivity extends BaseActivity {
             thread.setDaemon(true);
             return thread;
         });
-        // 创建EventHandler对象
         String userName = (String) SharedPreferencesUtils.getInstance().getData("userName_main", Constants.EMPTY);
         String passWord = (String) SharedPreferencesUtils.getInstance().getData("passWord_main", Constants.EMPTY);
         ivUserIcon = findViewById(R.id.iv_userIcon);

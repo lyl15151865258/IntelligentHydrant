@@ -24,7 +24,6 @@
                 android:layout_width="@dimen/dp_40"
                 android:layout_height="@dimen/dp_40"
                 android:layout_centerVertical="true"
-                android:layout_marginLeft="9dp"
                 android:layout_marginStart="9dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/user_icon"
@@ -50,8 +49,7 @@
                 android:layout_height="27dp"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="9dp"
-                android:layout_marginRight="9dp"
-                android:layout_toLeftOf="@+id/ivMessage"
+                android:layout_toStartOf="@+id/ivMessage"
                 android:clickable="true"
                 android:src="@drawable/icon_actionbar_search" />
 
@@ -60,9 +58,8 @@
                 android:layout_width="27dp"
                 android:layout_height="27dp"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_marginRight="9dp"
+                android:layout_marginEnd="9dp"
                 android:clickable="true"
                 android:src="@drawable/notification" />
         </RelativeLayout>
@@ -81,14 +78,14 @@
                 android:id="@+id/tv_allHydrant"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
                 android:layout_weight="1"
                 android:clickable="true"
                 android:gravity="center"
                 android:tag="0"
                 android:text="全部消火栓"
                 android:textColor="@color/white"
-                android:textSize="15dp" />
+                android:textSize="@dimen/sp_14" />
 
             <TextView
                 android:id="@+id/tv_fireHydrant"
@@ -100,20 +97,47 @@
                 android:tag="1"
                 android:text="消防专用"
                 android:textColor="@color/white"
-                android:textSize="15dp" />
+                android:textSize="@dimen/sp_14" />
 
             <TextView
                 android:id="@+id/tv_otherHydrant"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
-                android:layout_marginRight="15dp"
+                android:layout_marginEnd="15dp"
                 android:layout_weight="1"
                 android:clickable="true"
                 android:gravity="center"
                 android:tag="2"
                 android:text="市政取水点"
                 android:textColor="@color/white"
-                android:textSize="15dp" />
+                android:textSize="@dimen/sp_14" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/dp_5"
+            android:layout_marginTop="@dimen/dp_5"
+            android:background="@color/orange_100"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="@dimen/dp_8"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="@dimen/dp_18"
+                android:layout_height="@dimen/dp_18"
+                android:contentDescription="@null"
+                android:src="@mipmap/icon_bell" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:text="未打开通知权限，您可能错过重要信息（点我设置）" />
 
         </LinearLayout>
 
@@ -146,14 +170,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:background="@color/red"
-                    android:drawableRight="@drawable/right_arrow"
-                    android:gravity="left|center_vertical"
+                    android:drawableEnd="@drawable/right_arrow"
+                    android:gravity="start|center_vertical"
                     android:maxLines="1"
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:text="你尚未完成手机验证，请先进行手机验证"
                     android:textColor="@color/white"
-                    android:textSize="15dp"
+                    android:textSize="@dimen/sp_14"
                     android:visibility="gone" />
 
                 <ImageView
@@ -161,7 +185,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:src="@drawable/map_location_btn" />
@@ -171,7 +195,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
                     android:layout_margin="8dp"
                     android:clickable="true"
                     android:src="@drawable/service_menu_btn" />
@@ -181,8 +205,8 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_above="@+id/dingwei"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginLeft="8dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="@dimen/dp_8"
                     android:background="@drawable/map_refresh_btn"
                     android:clickable="true">
 

@@ -17,6 +17,7 @@ import cn.njmeter.intelligenthydrant.sqlite.DbHelper;
 import cn.njmeter.intelligenthydrant.utils.CrashHandler;
 import cn.njmeter.intelligenthydrant.utils.GsonUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
+import cn.njmeter.intelligenthydrant.utils.MyLifecycleHandler;
 import cn.njmeter.intelligenthydrant.utils.SharedPreferencesUtils;
 
 /**
@@ -58,6 +59,8 @@ public class HydrantApplication extends MultiDexApplication {
         SDKInitializer.initialize(this);
         locationService = new LocationService(getApplicationContext());
         serverList = new ArrayList<>();
+        //注册Activity生命周期回调
+        registerActivityLifecycleCallbacks(new MyLifecycleHandler());
 
         // android 7.0系统解决拍照的问题
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {

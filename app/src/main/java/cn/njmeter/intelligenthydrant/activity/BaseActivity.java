@@ -1,6 +1,5 @@
 package cn.njmeter.intelligenthydrant.activity;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -9,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -17,10 +15,9 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,8 +29,10 @@ import cn.njmeter.intelligenthydrant.constant.Constants;
 import cn.njmeter.intelligenthydrant.utils.ActivityController;
 import cn.njmeter.intelligenthydrant.utils.LanguageUtils;
 import cn.njmeter.intelligenthydrant.utils.LogUtils;
-import cn.njmeter.intelligenthydrant.utils.ScreenTools;
+import cn.njmeter.intelligenthydrant.utils.MyLifecycleHandler;
+import cn.njmeter.intelligenthydrant.utils.NotificationsUtils;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
+import cn.njmeter.intelligenthydrant.utils.ToastUtils;
 import cn.njmeter.intelligenthydrant.widget.dialog.LoadingDialog;
 
 /**
@@ -59,13 +58,17 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityController.addActivity(this);
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         LogUtils.d(LogUtils.TAG, getClass().getSimpleName() + "onCreate() ");
+        ActivityController.addActivity(this);
+        //不允许截屏
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         //保持屏幕常亮（禁止休眠）
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
         mDensity = dm.density;
         mDensityDpi = dm.densityDpi;
         mWidth = dm.widthPixels;
@@ -74,13 +77,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         mAvatarSize = (int) (50 * mDensity);
         loadingDialog = new LoadingDialog(this, R.style.loading_dialog);
         changeAppLanguage();
-        //程序长期在后台运行再打开的时候fragment重新加载问题
-//        if (savedInstanceState != null) {
-//            //重新创建Manager，防止此对象为空
-//            FragmentManager manager = getSupportFragmentManager();
-//            //弹出所有fragment
-//            manager.popBackStackImmediate(null, 1);
-//        }
     }
 
     @Override
@@ -98,95 +94,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     /**
-     * 设置字体不随系统设置改变
-     */
-    @Override
-    public Resources getResources() {
-        Resources resources = super.getResources();
-        Configuration configuration = new Configuration();
-        configuration.setToDefaults();
-        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
-        return resources;
-    }
-
-    /**
-     * 沉浸模式View
-     *
-     * @param views 需要偏移的View控件
-     */
-    protected void setActionBarLayout(View... views) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            for (View view : views) {
-                view.setPadding(0, ScreenTools.getStatusBarHeight(this), 0, 0);
-            }
-        }
-    }
-
-    /**
      * 沉浸模式View
      */
     protected void setStatusBar() {
-
-        StatusBarUtil.setColor(this, getResources().getColor(R.color.colorPrimary));
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            setStatusBarUpperAPI21(showStatus);
-//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//            setStatusBarUpperAPI19();
-//        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void setStatusBarUpperAPI19() {
-        Window window = getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-        ViewGroup mContentView = findViewById(Window.ID_ANDROID_CONTENT);
-        int statusBarHeight = ScreenTools.getStatusHeight(this);
-        int statusColor = getResources().getColor(R.color.colorBluePrimary);
-
-        View mTopView = mContentView.getChildAt(0);
-        if (mTopView != null && mTopView.getLayoutParams() != null && mTopView.getLayoutParams().height == statusBarHeight) {
-            //避免重复添加 View
-            mTopView.setBackgroundColor(statusColor);
-            return;
-        }
-        //使 ChildView 预留空间
-        if (mTopView != null) {
-            ViewCompat.setFitsSystemWindows(mTopView, true);
-        }
-
-        //添加假 View
-        mTopView = new View(this);
-        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, statusBarHeight);
-        mTopView.setBackgroundColor(statusColor);
-        mContentView.addView(mTopView, 0, lp);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void setStatusBarUpperAPI21(boolean showStatus) {
-        Window window = getWindow();
-        if (showStatus) {
-            //取消设置透明状态栏,使 ContentView 内容不再覆盖状态栏
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            //需要设置这个 flag 才能调用 setStatusBarColor 来设置状态栏颜色
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-            View decorView = window.getDecorView();
-            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            decorView.setSystemUiVisibility(option);
-
-            //设置状态栏颜色
-            window.setStatusBarColor(getResources().getColor(R.color.colorBluePrimary));
-            ViewGroup mContentView = findViewById(Window.ID_ANDROID_CONTENT);
-            View mChildView = mContentView.getChildAt(0);
-            if (mChildView != null) {
-                //注意不是设置 ContentView 的 FitsSystemWindows, 而是设置 ContentView 的第一个子 View . 预留出系统 View 的空间.
-                ViewCompat.setFitsSystemWindows(mChildView, true);
-            }
-        } else {
-            WindowManager.LayoutParams localLayoutParams = getWindow().getAttributes();
-            localLayoutParams.flags = (WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | localLayoutParams.flags);
-        }
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.colorBluePrimary));
     }
 
     @Override
@@ -198,19 +109,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
         return super.onTouchEvent(event);
-    }
-
-    @TargetApi(19)
-    private void setTranslucentStatus(boolean on) {
-        Window win = getWindow();
-        WindowManager.LayoutParams winParams = win.getAttributes();
-        final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-        if (on) {
-            winParams.flags |= bits;
-        } else {
-            winParams.flags &= ~bits;
-        }
-        win.setAttributes(winParams);
     }
 
     @Override
@@ -235,6 +133,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         //如果toast在显示则取消显示
+        if (toast != null) {
+            toast.cancel();
+        }
+        //取消显示dialog
         cancelDialog();
         LogUtils.d(LogUtils.TAG, getClass().getSimpleName() + "onPause() ");
     }
@@ -248,19 +150,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ActivityController.removeActivity(this);
         LogUtils.d(LogUtils.TAG, getClass().getSimpleName() + "onDestroy() ");
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        LogUtils.d(LogUtils.TAG, getClass().getSimpleName() + "onSaveInstanceState() ");
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        LogUtils.d(LogUtils.TAG, getClass().getSimpleName() + "onRestoreInstanceState() ");
     }
 
     @Override
@@ -280,18 +171,26 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     public void showToast(String msg) {
         //如果APP在前台显示就弹窗，否则不显示弹窗（主要是监听网络变化的toast）
-        View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
-        TextView tvMessage = view.findViewById(R.id.tv_toast_text);
-        tvMessage.setText(msg);
-        if (toast == null) {
-            toast = new Toast(this);
-            toast.setView(view);
-            toast.setDuration(Toast.LENGTH_SHORT);
-        } else {
-            toast.setView(view);
-            toast.setDuration(Toast.LENGTH_SHORT);
+        if (MyLifecycleHandler.isApplicationInForeground()) {
+            if (NotificationsUtils.isNotificationEnabled(this)) {
+                //如果授予了App系统通知权限，则使用系统Toast
+                View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
+                TextView tvMessage = view.findViewById(R.id.tv_toast_text);
+                tvMessage.setText(msg);
+                if (toast == null) {
+                    toast = new Toast(this);
+                    toast.setView(view);
+                    toast.setDuration(Toast.LENGTH_SHORT);
+                } else {
+                    toast.setView(view);
+                    toast.setDuration(Toast.LENGTH_SHORT);
+                }
+                toast.show();
+            } else {
+                //否则使用自定义的View（模仿Toast，存在瑕疵）
+                ToastUtils.makeText(this, msg, ToastUtils.LENGTH_SHORT).show();
+            }
         }
-        toast.show();
     }
 
     public void openActivity(Class<?> pClass) {
