@@ -39,7 +39,7 @@ import cn.njmeter.intelligenthydrant.widget.flowtaglayout.OnTagClickListener;
 import cn.njmeter.intelligenthydrant.widget.flowtaglayout.OnTagLongClickListener;
 
 /**
- * 选择水司层级
+ * 选择供水单位
  * Created by LiYuliang on 2017/3/10 0010.
  *
  * @author LiYuliang

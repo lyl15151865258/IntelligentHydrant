@@ -5,7 +5,7 @@ package cn.njmeter.intelligenthydrant.constant;
  * 本软件信息类
  *
  * @author LiYuliang
- * @version 2017/11/20
+ * @version 2018/06/09
  */
 
 public class ApkInfo {
@@ -15,6 +15,7 @@ public class ApkInfo {
     public static final String APK_TYPE_ID_METTER = "1";
     public static final String APK_TYPE_ID_HYDRANT = "2";
     public static final String APK_TYPE_ID_PIONEER = "3";
+    public static final String APK_TYPE_ID_CONSTANT_FLOW_VALVE = "4";
 
     /**
      * 软件版本：预览版（测试版）

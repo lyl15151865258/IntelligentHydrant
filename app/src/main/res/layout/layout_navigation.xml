@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/ll_info"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_180"
         android:background="@mipmap/bg_headportrait"
@@ -322,7 +321,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_historicalRecord"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/dp_50"
                     android:background="@drawable/background_item_list_selector"
@@ -357,7 +355,6 @@
                     android:background="@color/gray_slight" />
 
                 <LinearLayout
-                    android:id="@+id/ll_waterStatistics"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/dp_50"
                     android:background="@drawable/background_item_list_selector"
@@ -465,7 +462,6 @@
                         android:textSize="@dimen/sp_16" />
 
                     <TextView
-                        android:id="@+id/tv_update"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical|end" />

@@ -256,6 +256,9 @@ public class MainActivity extends BaseActivity {
     public class LoginReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            }
             hydrantClusterItemList.clear();
             hidePoiDetails();
             shouldUseLocation = false;
@@ -1740,7 +1743,6 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    //点击两次返回退出程序
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {

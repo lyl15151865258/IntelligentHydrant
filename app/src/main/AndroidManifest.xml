@@ -65,7 +65,7 @@
         <!-- Splash页 -->
         <activity
             android:name=".activity.SplashActivity"
-            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

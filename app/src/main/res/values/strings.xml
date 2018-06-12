@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">智能消火栓</string>
     <string name="zero_zero_zero_zero_zero_zero_zero_zero">00000000</string>
-    <string name="dialog_loading">数据加载中……</string>
     <string name="click_again_exit">再按一次退出程序</string>
     <string name="date">%1$s</string>
 
@@ -26,7 +25,6 @@
 
     <string name="AccountSettings">账号设置</string>
     <string name="MainAccount">主账号设置</string>
-    <string name="SubAccount">子账号设置</string>
     <string name="HydrantAccount">消火栓账号</string>
     <string name="BindSocialAccount">绑定社交账号</string>
     <string name="WaterUsingSearch">用水查询</string>
@@ -35,17 +33,10 @@
     <string name="NavigationApp">默认导航软件</string>
     <string name="HistoricalRecord">历史用水记录</string>
     <string name="WaterConsumption">查看用水统计</string>
-    <string name="PersonalizedSettings">个性化设置</string>
-    <string name="ShowLogoPage">显示引导页面</string>
-    <string name="ClearCache">缓存清理</string>
-    <string name="Calculating">正在计算</string>
-    <string name="Language">多语言</string>
     <string name="VersionAndShare">版本与分享</string>
     <string name="VersionView">版本查看</string>
     <string name="VersionUpdate">版本更新</string>
-    <string name="PreviewVersion">获取预览版本</string>
     <string name="Share">分享给好友</string>
-    <string name="FeedbackAndAdvice">反馈与建议</string>
     <string name="ContactUs">联系我们</string>
     <string name="Logout">退出登录</string>
 
@@ -54,9 +45,6 @@
     <string name="Nickname">昵称</string>
     <string name="ChangePassword">密码修改</string>
     <string name="UnitsAndPositions">单位和职务</string>
-    <string name="IdentityVerification">实名认证信息</string>
-    <string name="Certified">已认证</string>
-    <string name="InReview">审核中</string>
 
     <string name="camera_pop_camera">相机拍摄</string>
     <string name="camera_pop_album">从相册选取</string>
@@ -73,7 +61,6 @@
 
     <string name="versionCode">当前版本号:</string>
     <string name="example_versionCode">V1.0</string>
-    <string name="latest_data">最新数据</string>
 
     <string name="ChangeNickname">修改昵称</string>
     <string name="TypeInNickname">请输入昵称</string>
@@ -87,7 +74,6 @@
     <string name="resend_info_time">重新发送(%ds)</string>
     <string name="Confirm">确 认</string>
 
-    <string name="SmartWaterSupply">智慧水务平台</string>
     <string name="InputServerHost">请输入域名或服务器IP地址</string>
     <string name="InputHttpPort">请输入Http端口号</string>
     <string name="InputSocketPort">请输入Socket端口号</string>
@@ -102,16 +88,12 @@
     <string name="versionType_stable">正式版</string>
     <string name="versionType_preview">预览版</string>
 
-    <string name="dialog_save">保&#160;&#160;&#160;&#160;存</string>
-    <string name="dialog_clear">清&#160;&#160;&#160;&#160;空</string>
     <string name="dialog_cancel">取&#160;&#160;&#160;&#160;消</string>
-    <string name="dialog_ok">确&#160;&#160;&#160;&#160;定</string>
     <string name="dialog_input_continue">继&#160;&#160;&#160;&#160;续</string>
 
     <string name="scan_failed">扫描失败</string>
     <string name="loading">加载中…</string>
     <string name="exampleConsumption">%1$sm³</string>
-    <string name="exampleFlowRate">%1$sm³/h</string>
     <string name="EnterSearchContent">请输入搜索内容</string>
     <string name="RecentSearchRecord">最近搜索记录</string>
     <string name="warning_delete_history">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;您将删除该条搜索记录，是否继续删除？</string>
@@ -119,7 +101,6 @@
 
     <string name="waterCompanyName">waterCompanyName</string>
 
-    <string name="notification_open_notification">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;因为系统限制，您需要手动授予通知权限，不授予权限将影响软件的正常使用，是否前往设置页面打开？</string>
     <string name="reminder_metter">友情提示</string>
     <string name="warning_redownload">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;您已经下载过该版本文件，是否直接安装？</string>
 
