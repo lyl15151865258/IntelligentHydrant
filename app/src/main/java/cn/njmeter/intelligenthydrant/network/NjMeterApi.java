@@ -13,9 +13,11 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
+import retrofit2.http.Url;
 import rx.Observable;
 
 /**
@@ -139,6 +141,15 @@ public interface NjMeterApi {
     @FormUrlEncoded
     @POST("VersionController/downloadNewVersion.do")
     Call<ResponseBody> downloadFile(@FieldMap Map<String, String> params);
+
+    /**
+     * 下载软件
+     *
+     * @param filePath 文件路径
+     * @return 文件
+     */
+    @GET
+    Call<ResponseBody> downloadFile(@Url String filePath);
 
 
     /******************************************************************  消火栓平台相关接口  ******************************************************************

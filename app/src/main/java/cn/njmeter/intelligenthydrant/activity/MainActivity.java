@@ -1589,7 +1589,7 @@ public class MainActivity extends BaseActivity {
             tvTotalSize = progressDialog.findViewById(R.id.tv_totalSize);
             progressDialog.setCancelable(false);
             progressDialog.show();
-            NetClient.downloadFileProgress(apkDownloadPath, (currentBytes, contentLength, done) -> {
+            NetClient.downloadFileProgress((currentBytes, contentLength, done) -> {
                 //获取到文件的大小
                 apkSize = MathUtils.formatFloat((float) contentLength / 1024f / 1024f, 2);
                 tvTotalSize.setText(String.format(getString(R.string.file_size_m), String.valueOf(apkSize)));
