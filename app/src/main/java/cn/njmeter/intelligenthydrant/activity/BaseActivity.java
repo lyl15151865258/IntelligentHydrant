@@ -171,25 +171,23 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     public void showToast(String msg) {
         //如果APP在前台显示就弹窗，否则不显示弹窗（主要是监听网络变化的toast）
-        if (MyLifecycleHandler.isApplicationInForeground()) {
-            if (NotificationsUtils.isNotificationEnabled(this)) {
-                //如果授予了App系统通知权限，则使用系统Toast
-                View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
-                TextView tvMessage = view.findViewById(R.id.tv_toast_text);
-                tvMessage.setText(msg);
-                if (toast == null) {
-                    toast = new Toast(this);
-                    toast.setView(view);
-                    toast.setDuration(Toast.LENGTH_SHORT);
-                } else {
-                    toast.setView(view);
-                    toast.setDuration(Toast.LENGTH_SHORT);
-                }
-                toast.show();
+        if (NotificationsUtils.isNotificationEnabled(this)) {
+            //如果授予了App系统通知权限，则使用系统Toast
+            View view = LayoutInflater.from(this).inflate(R.layout.view_toast, findViewById(android.R.id.content), false);
+            TextView tvMessage = view.findViewById(R.id.tv_toast_text);
+            tvMessage.setText(msg);
+            if (toast == null) {
+                toast = new Toast(this);
+                toast.setView(view);
+                toast.setDuration(Toast.LENGTH_SHORT);
             } else {
-                //否则使用自定义的View（模仿Toast，存在瑕疵）
-                ToastUtils.makeText(this, msg, ToastUtils.LENGTH_SHORT).show();
+                toast.setView(view);
+                toast.setDuration(Toast.LENGTH_SHORT);
             }
+            toast.show();
+        } else {
+            //否则使用自定义的View（模仿Toast，存在瑕疵）
+            ToastUtils.makeText(this, msg, ToastUtils.LENGTH_SHORT).show();
         }
     }
 

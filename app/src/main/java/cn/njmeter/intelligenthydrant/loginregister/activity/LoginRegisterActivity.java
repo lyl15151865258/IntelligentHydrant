@@ -56,6 +56,7 @@ import cn.njmeter.intelligenthydrant.utils.RegexUtils;
 import cn.njmeter.intelligenthydrant.utils.SharedPreferencesUtils;
 import cn.njmeter.intelligenthydrant.utils.StatusBarUtil;
 import cn.njmeter.intelligenthydrant.utils.ViewUtils;
+import cn.smssdk.EventHandler;
 import cn.smssdk.OnSendMessageHandler;
 import cn.smssdk.SMSSDK;
 import rx.Observable;
@@ -80,6 +81,7 @@ public class LoginRegisterActivity extends BaseActivity {
     private CircularImageView ivUserIcon;
     private Context context;
     private MyHandler myHandler = new MyHandler(this);
+    private EventHandler eventHandler;
     /**
      * 短信验证码重复发送倒计时
      */
@@ -100,6 +102,22 @@ public class LoginRegisterActivity extends BaseActivity {
             thread.setDaemon(true);
             return thread;
         });
+        // 创建EventHandler对象
+        eventHandler = new EventHandler() {
+            @Override
+            public void afterEvent(int event, int result, Object data) {
+                Message msg9 = myHandler.obtainMessage();
+                msg9.arg1 = 9;
+                msg9.obj = data;
+                Bundle bundle = new Bundle();
+                bundle.putInt("event", event);
+                bundle.putInt("result", result);
+                msg9.setData(bundle);
+                myHandler.sendMessage(msg9);
+            }
+        };
+        // 注册监听器
+        SMSSDK.registerEventHandler(eventHandler);
         String userName = (String) SharedPreferencesUtils.getInstance().getData("userName_main", Constants.EMPTY);
         String passWord = (String) SharedPreferencesUtils.getInstance().getData("passWord_main", Constants.EMPTY);
         ivUserIcon = findViewById(R.id.iv_userIcon);
@@ -477,6 +495,7 @@ public class LoginRegisterActivity extends BaseActivity {
                             HydrantApplication.getInstance().setVersion2(clientUser.getVersion2());
                             HydrantApplication.getInstance().serverList = clientUser.getServer();
                             showToast("注册成功");
+
                             //切换到登录页面
                             rlLogin.setVisibility(View.VISIBLE);
                             llRegister.setVisibility(View.GONE);
@@ -550,6 +569,7 @@ public class LoginRegisterActivity extends BaseActivity {
     public void onDestroy() {
         super.onDestroy();
         myHandler.removeCallbacksAndMessages(null);
+        SMSSDK.unregisterEventHandler(eventHandler);
         executorService.shutdown();
     }
 }

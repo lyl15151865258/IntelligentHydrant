@@ -184,7 +184,12 @@ public class CrashHandler implements UncaughtExceptionHandler {
         try {
             // 将崩溃信息写入txt文件
             String model = Build.MODEL;
-            String fileName = "Hydrant-" + TimeUtils.getCurrentFormatDateTime() + "-" + model + "-" + "00000000" + ".txt";
+            String fileName;
+            if (HydrantApplication.getInstance().getAccount() != null) {
+                fileName = "Hydrant-" + TimeUtils.getCurrentFormatDateTime() + "-" + model + "-" + HydrantApplication.getInstance().getAccount().getLoginId() + ".txt";
+            } else {
+                fileName = "Hydrant-" + TimeUtils.getCurrentFormatDateTime() + "-" + model + "-" + "00000000" + ".txt";
+            }
             String path = getRoot();
             File dir = new File(path);
             if (!dir.exists()) {
