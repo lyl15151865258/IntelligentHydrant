@@ -195,7 +195,7 @@ public class NetClient {
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         Map<String, String> params = new HashMap<>(1);
-        params.put("apkTypeId", ApkInfo.APK_TYPE_ID_CONSTANT_FLOW_VALVE);
+        params.put("apkTypeId", ApkInfo.APK_TYPE_ID_HYDRANT);
         Call<ResponseBody> downloadCall = mRetrofit.create(NjMeterApi.class).downloadFile(params);
         downloadCall.enqueue(callback);
     }
